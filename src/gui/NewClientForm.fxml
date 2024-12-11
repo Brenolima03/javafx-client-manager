@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ComboBox?>
+
+<VBox
+  fx:id="clientForm"
+  xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/21.0.5" 
+  alignment="TOP_CENTER" fx:controller="gui.NewClientFormController"
+  stylesheets="@../application/application.css">
+  <VBox spacing="15" alignment="CENTER">
+    <VBox alignment="TOP_LEFT" maxWidth="250">
+      <Label text="Nome" />
+      <TextField
+        fx:id="nameField" promptText="Nome"
+        prefWidth="250" minWidth="250" maxWidth="250"
+      />
+    </VBox>
+
+    <VBox
+      fx:id="cpfCnpjChoices" alignment="CENTER" prefWidth="250" maxWidth="250">
+      <Label text="Tipo de pessoa"/>
+      <HBox spacing="20" alignment="CENTER_LEFT">
+        <RadioButton text="Física" fx:id="cpfRadioButton" selected="true" />
+        <RadioButton text="Jurídica" fx:id="cnpjRadioButton" />
+      </HBox>
+    </VBox>
+
+    <VBox alignment="TOP_LEFT" maxWidth="250">
+      <Label text="CPF | CNPJ" />
+      <TextField
+        fx:id="cpfCnpjField" promptText="XXX.XXX.XXX-XX"
+        prefWidth="250" minWidth="250" maxWidth="250"
+      />
+    </VBox>
+
+    <VBox spacing="5" alignment="TOP_LEFT" maxWidth="250">
+      <Label text="Telefone" />
+      <TextField
+        fx:id="telephoneField" promptText="(00) 00000-0000"
+        prefWidth="250" minWidth="250" maxWidth="250"
+      />
+    </VBox>
+
+    <VBox spacing="5" alignment="TOP_LEFT" maxWidth="250">
+      <Label text="Data de nascimento" />
+      <DatePicker
+        fx:id="birthDateField" promptText="01/01/2000" prefWidth="250"
+        minWidth="250" maxWidth="250"
+      />
+    </VBox>
+
+    <VBox spacing="5" alignment="TOP_LEFT" maxWidth="250">
+      <Label text="Tipo" />
+      <ComboBox
+        fx:id="typeComboBox" prefWidth="250" minWidth="250" maxWidth="250"
+      />
+    </VBox>
+
+    <HBox spacing="10" alignment="CENTER" style="-fx-padding: 15px 0 0 0">
+      <Button text="Cancelar" fx:id="cancelButton" />    
+      <Button text="Salvar" fx:id="saveButton" />
+    </HBox>
+  </VBox>
+</VBox>

@@ -1,0 +1,250 @@
+/* ======================== General Styles ======================== */
+* {
+  -fx-font-size: 18px;
+}
+
+/* ======================== Containers ======================== */
+#searchContainer {
+  -fx-alignment: CENTER_LEFT;
+  -fx-max-width: 1800px;
+}
+
+#searchField {
+  -fx-min-width: 400px;
+}
+
+#filtersCombobox {
+  -fx-pref-width: 250px;
+}
+
+.combo-box .arrow-button, .button {
+  -fx-cursor: hand;  
+}
+ 
+#filtersCombobox .arrow-button {
+  -fx-background-color: #058DD0;
+  -fx-padding: 0 10 0 10;
+}
+
+#filtersCombobox .arrow {
+  -fx-background-color: white;
+  -fx-background-insets: 0;
+}
+
+#message {
+  -fx-font-size: 16px;
+  -fx-text-fill: red;
+}
+
+/* ======================== TableView ======================== */
+.table-view {
+  -fx-padding: 0;
+  -fx-border-width: 2;
+  -fx-border-color: rgba(200, 200, 200, 0.5);
+}
+
+.table-view:focused {
+  -fx-border-color: lightblue;
+  -fx-border-width: 2;
+}
+
+.table-view .column-header {
+  -fx-background-color: #4682B4;
+  -fx-pref-height: 55px;
+}
+
+.table-view .column-header .label {
+  -fx-text-fill: #FFFFFF;
+  -fx-font-weight: bold;
+  -fx-alignment: center-left;
+}
+
+.table-view .table-cell {
+  -fx-alignment: center-left;
+}
+
+.table-row-cell {
+  -fx-cell-size: 50px;
+}
+
+.table-row-cell:selected {
+  -fx-background-color: -fx-selection-bar;
+}
+
+.table-row-cell:selected .text {
+  -fx-fill: #FFFFFF;
+}
+
+/* ======================== ComboBox ======================== */
+.transparent-combobox {
+  -fx-background-color: transparent;
+  -fx-border-color: transparent;
+  -fx-focus-color: transparent;
+  -fx-faint-focus-color: transparent;
+  -fx-pref-width: 220;
+}
+
+.combo-box-popup .list-view .list-cell .text {
+  -fx-fill: black;
+}
+
+.combo-box-popup .list-view .list-cell:hover .text,
+.combo-box-popup .list-view .list-cell:focused .text {
+  -fx-fill: white;
+}
+
+/* ======================== Locked Rows ======================== */
+.locked-row {
+  -fx-background-color: #f0f0f0;
+  -fx-text-fill: gray;
+  -fx-opacity: 0.5;
+}
+
+/* ======================== Pagination ======================== */
+#firstPageButton, 
+#lastPageButton {
+  -fx-background-color: transparent;
+  -fx-border-color: #5FA8D3;
+  -fx-border-width: 2px;
+  -fx-pref-width: 40px;
+  -fx-pref-height: 40px;
+  -fx-border-radius: 5px;
+  -fx-text-fill: #4682B4;
+  -fx-font-size: 20px;
+  -fx-font-weight: bold;
+  -fx-padding: 0;
+  -fx-alignment: center;
+}
+
+.pagination .pagination-control .button,
+.pagination .toggle-button {
+  -fx-background-color: transparent;
+  -fx-border-color: #5FA8D3;
+  -fx-border-width: 2px;
+  -fx-pref-width: 30px;
+  -fx-pref-height: 30px;
+  -fx-border-radius: 5px;
+  -fx-text-fill: #4682B4;
+  -fx-font-size: 20px;
+  -fx-font-weight: bold;
+  -fx-padding: 0;
+  -fx-alignment: center;
+}
+
+.pagination {
+  -fx-pref-height: 40px;
+}
+
+#pages {
+  -fx-alignment: center;
+  -fx-spacing: 10px;
+  -fx-padding: 0;
+  -fx-background-color: lightblue;
+}
+
+/* Hover effect for pagination buttons */
+.pagination > .pagination-control > .control-box > .number-button:hover,
+.pagination > .pagination-control > .control-box > .bullet-button:hover,
+.pagination > .pagination-control > .control-box > .left-arrow-button:hover,
+.pagination > .pagination-control > .control-box > .right-arrow-button:hover,
+#firstPageButton:hover,
+#lastPageButton:hover {
+  -fx-background-insets: 0;
+  -fx-background-color: lightgray;
+}
+
+/* ======================== Client form ======================== */
+#clientForm {
+  -fx-padding: 40px; /* Adjust padding to control spacing around the form */
+}
+
+/* ======================== Labels ======================== */
+VBox > Label, 
+#cpfCnpjChoices > Label {
+  -fx-font-size: 14px;
+  -fx-text-fill: #333; /* Dark gray for readability */
+  -fx-padding: 0 0 2px 0; /* Spacing below the label */
+  -fx-alignment: CENTER_LEFT;
+}
+
+/* ======================== TextFields ======================== */
+#nameField, 
+#cpfCnpjField, 
+#telephoneField {
+  -fx-font-size: 14px;
+  -fx-padding: 10;
+  -fx-background-color: #FFFFFF;
+  -fx-border-color: transparent;
+  -fx-border-radius: 8px;
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 6, 0.1, 2, 2);
+}
+
+/* ======================== DatePicker ======================== */
+#birthDateField {
+  -fx-font-size: 14px;
+  -fx-padding: 0;
+  -fx-pref-height: 45px;
+  -fx-background-color: transparent;
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 6, 0.1, 2, 2);
+}
+
+#birthDateField .text-field {
+  -fx-border-color: transparent;
+  -fx-padding: 0 10px;
+}
+
+/* DatePicker Popup Styles */
+.date-picker-popup .month-year-pane {
+  -fx-background-color: #3696C6;
+}
+
+.date-picker-popup .label {
+  -fx-text-fill: #FFFFFF;
+}
+
+.date-picker-popup .left-arrow, 
+.date-picker-popup .right-arrow {
+  -fx-background-color: #FFFFFF;
+}
+
+.date-picker-popup .left-arrow:hover, 
+.date-picker-popup .right-arrow:hover {
+  -fx-background-color: #3696C6;
+}
+
+/* ======================== Radio Buttons ======================== */
+#cpfCnpjChoices {
+  -fx-pref-width: 250px;
+  -fx-alignment: CENTER_LEFT;
+  -fx-spacing: 10px;
+}
+
+#cpfRadioButton, 
+#cnpjRadioButton {
+  -fx-font-size: 8px;
+  -fx-text-fill: #333;
+}
+
+/* ======================== Buttons ======================== */
+#saveButton, 
+#cancelButton {
+  -fx-font-size: 14px;
+  -fx-padding: 10px 20px;
+  -fx-background-color: #4CAF50;
+  -fx-text-fill: #FFFFFF;
+  -fx-border-radius: 8px;
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 6, 0.1, 0, 2);
+  -fx-pref-width: 120px;
+}
+
+#saveButton:hover {
+  -fx-background-color: #45a049;
+}
+
+#cancelButton {
+  -fx-background-color: #f44336;
+}
+
+#cancelButton:hover {
+  -fx-background-color: #e53935;
+}
