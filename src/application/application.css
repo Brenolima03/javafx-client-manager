@@ -180,19 +180,6 @@ VBox > Label,
 }
 
 /* ======================== DatePicker ======================== */
-#birthDateField {
-  -fx-font-size: 14px;
-  -fx-padding: 0;
-  -fx-pref-height: 45px;
-  -fx-background-color: transparent;
-  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 6, 0.1, 2, 2);
-}
-
-#birthDateField .text-field {
-  -fx-border-color: transparent;
-  -fx-padding: 0 10px;
-}
-
 /* DatePicker Popup Styles */
 .date-picker-popup .month-year-pane {
   -fx-background-color: #3696C6;

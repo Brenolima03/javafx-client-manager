@@ -6,12 +6,8 @@ public class TelephoneMask {
   public static void applyTelephoneMask(TextField telephoneField) {
     telephoneField.textProperty().addListener(
     (observable, oldValue, newValue) -> {
-      // Check if the user is deleting (backspace) or adding characters
-      if (newValue.length() < oldValue.length()) {
-        return; // Ignore changes caused by backspace or delete
-      }
+      if (newValue.length() < oldValue.length()) return;
 
-      // Remove non-numeric characters from the new text
       String filteredText = newValue.replaceAll("[^0-9]", "");
 
       // Apply mask formatting dynamically

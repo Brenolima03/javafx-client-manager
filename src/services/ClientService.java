@@ -13,16 +13,20 @@ public class ClientService {
     dao.insertDao(obj);
   }
 
+  public String findClientById(int id) {
+    return dao.findClientByIdDao(id);
+  }
+
+  public List<Client> findAllClients() {
+    return dao.findAllDao();  
+  }
+
   public void update(Client obj) {
     dao.updateDao(obj);
   }
 
   public void delete(int id) {
     dao.deleteByIdDao(id);
-  }
-
-  public int count() {
-    return dao.countDao();
   }
 
   public List<Client> search(String filter, String argument) {
@@ -38,22 +42,41 @@ public class ClientService {
     }
   }
 
-  public List<String> getContractsByClientCpfCnpj(String cpfCnpj) {
+  public List<String> getGuarantorsById(int id) {
     try {
-      return dao.getContractsByCpfCnpjDao(cpfCnpj);
+      return dao.getGuarantorsById(id);
     } catch (DbException e) {
       throw new DbException(
-        "Error while retrieving contracts for client: " + cpfCnpj, e
+        "Error while retrieving guarantors for client: " + id, e
       );
     }
   }
-  public List<String> getGuarantorsByClientCpfCnpj(String cpfCnpj) {
+
+  public String getGuaranteeTypeByContractId(int id) {
     try {
-      return dao.getGuarantorsByCpfCnpjDao(cpfCnpj);
+      return dao.getGuaranteeTypeByContractIdDao(id);
     } catch (DbException e) {
-      throw new DbException(
-        "Error while retrieving guarantors for client: " + cpfCnpj, e
+    	throw new DbException(
+    	  "Error while retrieving guarantee type for client: " + id, e
       );
     }
+  }
+
+  public double getDeposit(int contract) {
+    try {
+      return dao.getDeposit(contract);
+    } catch (DbException e) {
+    	throw new DbException(
+    	  "Error while retrieving deposit for client: " + contract, e
+      );
+    }
+  }
+
+  public int count() {
+    return dao.countDao();
+  }
+
+  public List<String> findStates() {
+    return dao.findStatesDao();  
   }
 }

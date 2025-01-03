@@ -1,21 +1,26 @@
 package model.entities;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Objects;
-import model.entities.Guarantee.GuaranteeType;
 
 public class Client {
   private int id;
   private String name;
   private String cpfCnpj;
+  private String issuingOrganization;
+  private String rg;
   private LocalDate birthDate;
-  private List<String> contracts;
+  private int contract;
   private String telephone;
-  private GuaranteeType guarantee;
-  private List<String> guarantorName;
-  private double deposit;
   private ClientType clientType;
+  private boolean isMarried;
+  private String address;
+  private String nationality;
+  private String profession;
+  private String neighborhood;
+  private String city;
+  private String state;
+  private String zip;
 
   public enum ClientType {
     TENANT,
@@ -37,20 +42,28 @@ public class Client {
   public Client() {}
 
   public Client(
-    int id, String name, String cpfCnpj, LocalDate birthDate,
-    List<String> contracts, String telephone, GuaranteeType guarantee,
-    List<String> guarantorName, double deposit, ClientType clientType
+    int id, String name, String cpfCnpj, String rg, String issuingOrganization,
+    LocalDate birthDate, int contract, String telephone, ClientType clientType,
+    boolean isMarried, String address, String nationality, String profession,
+    String neighborhood, String city, String state, String zip
   ) {
     this.id = id;
     this.name = name;
     this.cpfCnpj = cpfCnpj;
+    this.rg = rg;
+    this.issuingOrganization = issuingOrganization;
     this.birthDate = birthDate;
-    this.contracts = contracts;
+    this.contract = contract;
     this.telephone = telephone;
-    this.guarantee = guarantee;
-    this.guarantorName = guarantorName;
-    this.deposit = deposit;
     this.clientType = (clientType != null) ? clientType : ClientType.TENANT;
+    this.isMarried = isMarried;
+    this.address = address;
+    this.nationality = nationality;
+    this.profession = profession;
+    this.neighborhood = neighborhood;
+    this.city = city;
+    this.state = state;
+    this.zip = zip;
   }
 
   public int getId() {
@@ -77,6 +90,30 @@ public class Client {
     this.cpfCnpj = cpfCnpj;
   }
 
+  public String getRg() {
+    return rg;
+  }
+
+  public void setRg(String rg) {
+    this.rg = rg;
+  }
+
+  public String getIssuingOrganization() {
+    return issuingOrganization;
+  }
+
+  public void setIssuingOrganization(String issuingOrganization) {
+    this.issuingOrganization = issuingOrganization;
+  }
+
+  public int getContract() {
+    return contract;
+  }
+
+  public void setContract(int contract) {
+    this.contract = contract;
+  }
+
   public LocalDate getBirthDate() {
     return birthDate;
   }
@@ -93,36 +130,76 @@ public class Client {
     this.telephone = telephone;
   }
 
-  public List<String> getGuarantorName() {
-    return guarantorName;
-  }
-
-  public void setGuarantorName(List<String> guarantorName) {
-    this.guarantorName = guarantorName;
-  }
-
-  public GuaranteeType getGuarantee() {
-    return guarantee;
-  }
-
-  public void setGuarantee(GuaranteeType guarantee) {
-    this.guarantee = guarantee;
-  }
-
-  public double getDeposit() {
-    return deposit;
-  }
-
-  public void setDeposit(double deposit) {
-    this.deposit = deposit;
-  }
-
   public ClientType getClientType() {
     return clientType;
   }
 
   public void setClientType(ClientType clientType) {
     this.clientType = clientType;
+  }
+
+  public boolean isMarried() {
+    return isMarried;
+  }
+
+  public void setIsMarried(boolean isMarried) {
+    this.isMarried = isMarried;
+  }
+
+  public String getAddress() {
+    return address;
+  }
+
+  public void setAddress(String address) {
+    this.address = address;
+  }
+
+  public String getNationality() {
+    return nationality;
+  }
+
+  public void setNationality(String nationality) {
+    this.nationality = nationality;
+  }
+
+  public String getProfession() {
+    return profession;
+  }
+
+  public void setProfession(String profession) {
+    this.profession = profession;
+  }
+
+  public String getNeighborhood() {
+    return neighborhood;
+  }
+
+  public void setNeighborhood(String neighborhood) {
+    this.neighborhood = neighborhood;
+  }
+
+  public String getCity() {
+    return city;
+  }
+
+  public void setCity(String city) {
+    this.city = city;
+  }
+
+  public String getState() {
+    return state;
+  }
+
+  public void setState(String state) {
+    this.state = state;
+  }
+
+  public String getZip() {
+    return zip;
+  }
+
+  public void setZip(String zip) {
+    this.zip = zip;
   }
 
   @Override
@@ -151,8 +228,7 @@ public class Client {
   public String toString() {
     return
       "Client [name=" + name + ", cpfCnpj=" + cpfCnpj +
-      ", birthDate=" + birthDate + ", contracts=" + contracts +
-      ", telephone=" + telephone + ", guarantorName=" + guarantorName +
-      ", guarantee=" + guarantee + ", clientType=" + clientType + "]";
+      ", birthDate=" + birthDate + ", contract=" + contract +
+      ", telephone=" + telephone + ", clientType=" + clientType + "]";
   }
 }

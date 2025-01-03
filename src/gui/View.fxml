@@ -11,15 +11,13 @@
   fx:controller="gui.ViewController" style="-fx-font-size: 18px;">
   <MenuBar AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
     <Menu text="Clientes">
-      <MenuItem text="Ver" fx:id="clientList" onAction="#onListClientsAction"/>
+      <MenuItem text="Ver" fx:id="clientList" onAction="#openClientList"/>
     </Menu>
     <Menu text="Imóveis">
       <MenuItem text="Ver"/>
-      <MenuItem text="Novo"/>
     </Menu>
     <Menu text="Contratos">
-      <MenuItem text="Ver"/>
-      <MenuItem text="Novo"/>
+      <MenuItem text="Ver" fx:id="contractList" onAction="#openContractList"/>
     </Menu>
   </MenuBar>
 </AnchorPane>

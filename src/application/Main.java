@@ -13,8 +13,9 @@ public class Main extends Application {
   @Override
   public void start(Stage primaryStage) {
     try {
-      // Load the FXML file and initialize the view
-      FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/View.fxml"));
+      FXMLLoader loader =
+      new FXMLLoader(getClass().getResource("/gui/View.fxml"));
+      Icons.setIcon(primaryStage, "src/icons/favicon.png");
       Parent root = loader.load();
       ViewController controller = loader.getController();
       controller.setStage(primaryStage);
@@ -26,9 +27,6 @@ public class Main extends Application {
       primaryStage.setWidth(1920);
       primaryStage.setHeight(1080);
       primaryStage.setMaximized(true);
-      Icons.setIcon(primaryStage, "src/icons/favicon.png");
-
-      // Show the application window
       primaryStage.show();
     } catch (IOException e) {
       e.printStackTrace();

@@ -1,14 +1,13 @@
 package gui;
 
 import java.time.LocalDate;
+import java.util.List;
 
+import db.DbException;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import model.entities.Client;
@@ -28,10 +27,7 @@ public class NewClientFormController {
   private VBox clientForm;
 
   @FXML
-  private ComboBox <String> typeComboBox;
-
-  @FXML
-  private VBox cpfCnpjChoices;
+  private ComboBox<String> typeComboBox;
 
   @FXML
   private RadioButton cpfRadioButton;
@@ -41,6 +37,12 @@ public class NewClientFormController {
 
   @FXML
   private TextField cpfCnpjField;
+
+  @FXML
+  private TextField rgField;
+
+  @FXML
+  private TextField issuingOrganizationField;
 
   @FXML
   private TextField nameField;
@@ -57,6 +59,33 @@ public class NewClientFormController {
   @FXML
   private Button cancelButton;
 
+  @FXML
+  private TextField nationalityField;
+
+  @FXML
+  private RadioButton marriedRadioButton;
+
+  @FXML
+  private RadioButton singleRadioButton;
+
+  @FXML
+  private TextField professionField;
+
+  @FXML
+  private TextField addressField;
+
+  @FXML
+  private TextField neighborhoodField;
+
+  @FXML
+  private TextField cityField;
+
+  @FXML
+  private ComboBox<String> stateField;
+
+  @FXML
+  private TextField zipField;
+
   public void setStage(Stage stage) {
     this.stage = stage;
     Icons.setIcon(stage, "src/icons/favicon.png");
@@ -70,12 +99,13 @@ public class NewClientFormController {
   {
     this.clientListController = clientListController;
   }
+
   @FXML
   private void initialize() {
     if (clientService == null) {
       throw new IllegalStateException(
-        "ClientService was not initialized. Call setClientService() " +
-        "before loading the controller."
+        "ClientService was not initialized. " +
+        "Call setClientService() before loading the controller."
       );
     }
 
@@ -89,67 +119,106 @@ public class NewClientFormController {
     // Set initial CPF or CNPJ mask for 'Pessoa Física'
     cpfCnpjField.setPromptText("XXX.XXX.XXX-XX");
 
-    // Create a ToggleGroup for CPF and CNPJ radio buttons to ensure only one can be selected
+    // Create ToggleGroups for exclusive selection
     ToggleGroup cpfCnpjToggleGroup = new ToggleGroup();
     cpfRadioButton.setToggleGroup(cpfCnpjToggleGroup);
     cnpjRadioButton.setToggleGroup(cpfCnpjToggleGroup);
 
-    // Add action listeners to radio buttons
-    cpfRadioButton.setOnAction(event -> CpfCnpj.updateCpfCnpjMask(cpfRadioButton, cpfCnpjField));
-    cnpjRadioButton.setOnAction(event -> CpfCnpj.updateCpfCnpjMask(cnpjRadioButton, cpfCnpjField));
+    ToggleGroup maritalStatusToggleGroup = new ToggleGroup();
+    marriedRadioButton.setToggleGroup(maritalStatusToggleGroup);
+    singleRadioButton.setToggleGroup(maritalStatusToggleGroup);
 
-    CpfCnpj.applyCpfCnpjMask(cpfCnpjField, cpfRadioButton, cnpjRadioButton);
+    // Add action listeners to radio buttons
+    cpfRadioButton.setOnAction(
+      event -> CpfCnpj.updateCpfCnpjMask(cpfRadioButton, cpfCnpjField)
+    );
+    cnpjRadioButton.setOnAction(
+      event -> CpfCnpj.updateCpfCnpjMask(cnpjRadioButton, cpfCnpjField)
+    );
+
+    CpfCnpj.applyCpfCnpjMaskOnInputFields(
+      cpfCnpjField, cpfRadioButton, cnpjRadioButton
+    );
+
+    // Populate state ComboBox
+    List<String> states = clientService.findStates();
+    ObservableList<String> observableStates =
+    FXCollections.observableArrayList(states);
+
+    stateField.setItems(observableStates);
+    // Restrict zipField input to digits only and limit to 8 characters
+    zipField.textProperty().addListener((observable, oldValue, newValue) -> {
+      // Allow only digits
+      if (!newValue.matches("\\d*"))
+        zipField.setText(newValue.replaceAll("[^\\d]", ""));
+
+      // Limit input to 8 digits
+      if (zipField.getText().length() > 8)
+        zipField.setText(zipField.getText().substring(0, 8));
+    });
 
     saveButton.setOnAction(event -> handleSave());
     cancelButton.setOnAction(event -> closeWindow());
   }
 
-  // Handle save action
   private void handleSave() {
     String name = nameField.getText();
-    // Extract only digits from cpfCnpj and telephone fields
     String cpfCnpj = cpfCnpjField.getText().replaceAll("\\D", "");
+    String rg = rgField.getText().replaceAll("\\D", "");
+    String issuingOrganization = issuingOrganizationField.getText();
     String telephone = telephoneField.getText().replaceAll("\\D", "");
     LocalDate birthDate = birthDateField.getValue();
     String selectedType = typeComboBox.getValue();
+    String nationality = nationalityField.getText();
+    boolean isMarried = marriedRadioButton.isSelected();
+
+    String profession = professionField.getText();
+    String address = addressField.getText();
+    String neighborhood = neighborhoodField.getText();
+    String city = cityField.getText();
+    String state = stateField.getValue();
+    String zip = zipField.getText();
+
+    if (
+      name == null || name.trim().isEmpty() ||
+      cpfCnpj == null || cpfCnpj.trim().isEmpty() ||
+      telephone == null || telephone.trim().isEmpty() ||
+      birthDate == null) {
+      return;
+    }
+
+    ClientType clientType =
+      "Locador".equals(selectedType) ? ClientType.LANDLORD : ClientType.TENANT;
 
     if (client == null) client = new Client();
+    if (!CpfCnpj.isValid(cpfCnpj)) return;
 
-    // Validate inputs and save
-    if (
-      name != null && !name.trim().isEmpty() &&
-      telephone != null && !telephone.trim().isEmpty() &&
-      birthDate != null &&
-      cpfCnpj != null && !cpfCnpj.trim().isEmpty()
-    ) {
-    	// Validate CPF or CNPJ
-        if (!CpfCnpj.isValid(cpfCnpj)) {
-          return; // If CPF/CNPJ is invalid, stop further processing
-        }
-      // Map the selected type (Locador -> LANDLORD, Locatário -> TENANT)
-      ClientType clientType =
-        "Locador".equals(selectedType) ?
-        ClientType.LANDLORD : ClientType.TENANT;
+    client.setName(name);
+    client.setCpfCnpj(cpfCnpj);
+    client.setRg(rg);
+    client.setIssuingOrganization(issuingOrganization);
+    client.setTelephone(telephone);
+    client.setBirthDate(birthDate);
+    client.setClientType(clientType);
+    client.setNationality(nationality);
+    client.setIsMarried(isMarried);
+    client.setProfession(profession);
+    client.setAddress(address);
+    client.setNeighborhood(neighborhood);
+    client.setCity(city);
+    client.setState(state);
+    client.setZip(zip);
 
-      client.setName(name);
-      client.setCpfCnpj(cpfCnpj);
-      client.setTelephone(telephone);
-      // Birthdate will already be in the correct format (yyyy-MM-dd)
-      client.setBirthDate(birthDate);
-      client.setClientType(clientType);
-      client.setGuarantee(null);
-      client.setGuarantorName(null);
-
-      // Call the save callback (service layer)
+    try {
       clientService.insert(client);
-      clientListController.refreshTableData();
-
       closeWindow();
-      clientListController.setupPagination();
+    } catch (DbException e) {
+      e.printStackTrace();
     }
+    clientListController.refreshTableData();
+    clientListController.setupPagination();
   }
 
-  // Close window after saving
   private void closeWindow() {
     stage.close();
   }

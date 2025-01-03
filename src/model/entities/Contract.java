@@ -1,20 +1,43 @@
 package model.entities;
 
+import java.time.LocalDate;
 import java.util.Base64;
+import model.entities.Guarantee.GuaranteeType;
 
 public class Contract {
   private int id;
-  private Client tenant;
-  private Client landlord;
+  private int tenant;
+  private int landlord;
+  private LocalDate rentBeginning;
+  private LocalDate rentEnd;
+  private double rentValue;
+  private double depositValue;
+  private Guarantee guarantee;
   private String fileBase64;
+  private double energyBill;
+  private double waterBill;
+  private LocalDate contractSigningDate;
 
   public Contract() {}
 
-  public Contract(int id, Client tenant, Client landlord, String fileBase64) {
+  public Contract(
+    int id, int tenant, int landlord, LocalDate rentBeginning,
+    LocalDate rentEnd, double rentValue, double depositValue,
+    Guarantee guarantee, String fileBase64, double energyBill, 
+    double waterBill, LocalDate contractSigningDate
+  ) {
     this.id = id;
     this.tenant = tenant;
     this.landlord = landlord;
+    this.rentBeginning = rentBeginning;
+    this.rentEnd = rentEnd;
+    this.rentValue = rentValue;
+    this.depositValue = depositValue;
+    this.guarantee = guarantee;
     this.fileBase64 = fileBase64;
+    this.energyBill = energyBill;
+    this.waterBill = waterBill;
+    this.contractSigningDate = contractSigningDate;
   }
 
   public int getId() {
@@ -25,20 +48,60 @@ public class Contract {
     this.id = id;
   }
 
-  public Client getTenant() {
+  public int getTenant() {
     return tenant;
   }
 
-  public void setTenant(Client tenant) {
+  public void setTenant(int tenant) {
     this.tenant = tenant;
   }
 
-  public Client getLandlord() {
+  public int getLandlord() {
     return landlord;
   }
 
-  public void setLandlord(Client landlord) {
+  public void setLandlord(int landlord) {
     this.landlord = landlord;
+  }
+
+  public LocalDate getRentBeginning() {
+    return rentBeginning;
+  }
+
+  public void setRentBeginning(LocalDate rentBeginning) {
+    this.rentBeginning = rentBeginning;
+  }
+
+  public LocalDate getRentEnd() {
+    return rentEnd;
+  }
+
+  public void setRentEnd(LocalDate rentEnd) {
+    this.rentEnd = rentEnd;
+  }
+
+  public double getRentValue() {
+    return rentValue;
+  }
+
+  public void setRentValue(double rentValue) {
+    this.rentValue = rentValue;
+  }
+
+  public double getDepositValue() {
+    return depositValue;
+  }
+
+  public void setDepositValue(double depositValue) {
+    this.depositValue = depositValue;
+  }
+
+  public Guarantee getGuarantee() {
+    return guarantee;
+  }
+
+  public void setGuarantee(Guarantee guarantee) {
+    this.guarantee = guarantee;
   }
 
   public String getFileBase64() {
@@ -49,13 +112,45 @@ public class Contract {
     this.fileBase64 = fileBase64;
   }
 
-  // Method to convert file from byte[] to Base64 string (for saving images)
+  public double getEnergyBill() {
+    return energyBill;
+  }
+
+  public void setEnergyBill(double energyBill) {
+    this.energyBill = energyBill;
+  }
+
+  public double getWaterBill() {
+    return waterBill;
+  }
+
+  public void setWaterBill(double waterBill) {
+    this.waterBill = waterBill;
+  }
+
+  public LocalDate getContractSigningDate() {
+    return contractSigningDate;
+  }
+
+  public void setContractSigningDate(LocalDate contractSigningDate) {
+    this.contractSigningDate = contractSigningDate;
+  }
+
+  // Encoding and decoding methods for Base64
   public static String encodeFileToBase64(byte[] fileBytes) {
     return Base64.getEncoder().encodeToString(fileBytes);
   }
 
-  // Method to decode Base64 string back to byte[] (for reading files)
   public static byte[] decodeFileFromBase64(String fileBase64) {
     return Base64.getDecoder().decode(fileBase64);
+  }
+
+  @Override
+  public String toString() {
+    return "Contract [id=" + id + ", tenant=" + tenant + ", landlord="
+      + landlord + ", rentBeginning=" + rentBeginning + ", rentEnd=" + rentEnd 
+      + ", rentValue=" + rentValue + ", guarantee=" + guarantee 
+      + ", energyBill=" + energyBill + ", waterBill=" + waterBill 
+      + ", contractSigningDate=" + contractSigningDate + "]";
   }
 }

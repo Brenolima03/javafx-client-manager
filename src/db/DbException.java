@@ -5,7 +5,8 @@ public class DbException extends RuntimeException {
 
   // Constructor with message and cause (SQLException)
   public DbException(String msg, Throwable cause) {
-    super(msg, cause); // Call the parent class constructor with the message and cause
+    // Call the parent class constructor with the message and cause
+    super(msg, cause);
   }
 
   // Existing constructor for a message only

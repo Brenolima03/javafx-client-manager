@@ -3,6 +3,7 @@ package gui;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -11,6 +12,8 @@ import application.Main;
 import db.DbException;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -40,7 +43,10 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import model.entities.Client;
+import model.entities.Client.ClientType;
+import model.entities.Guarantee.GuaranteeType;
 import services.ClientService;
+import utils.CpfCnpj;
 import utils.Currency;
 import utils.Icons;
 
@@ -64,7 +70,7 @@ public class ClientListController extends Main {
   private TableColumn <Client, LocalDate> birthDateColumn;
 
   @FXML
-  private TableColumn <Client, List <String>> contractColumn;
+  private TableColumn <Client, String> contractColumn;
 
   @FXML
   private TableColumn <Client, String> telephoneColumn;
@@ -116,7 +122,7 @@ public class ClientListController extends Main {
     this.clientService = new ClientService();
   }
 
-  private void blockTypingExceptCtrlC(Node node) {
+  private void blockKeyboardExceptCtrlC(Node node) {
     node.addEventFilter(KeyEvent.ANY, event -> {
       if (!(event.isControlDown() && event.getCode() == KeyCode.C))
         event.consume();
@@ -176,11 +182,10 @@ public class ClientListController extends Main {
           return null;
         }
       });
-      blockTypingExceptCtrlC(cell);
+      blockKeyboardExceptCtrlC(cell);
       return cell;
     });
   }
-
 
   private void configureColumn() {
     // Configuring editable columns
@@ -196,19 +201,31 @@ public class ClientListController extends Main {
     // Configuring non-editable columns
     configureNonEditableColumn(cpfCnpjColumn, "cpfCnpj");
     configureNonEditableColumn(birthDateColumn, "birthDate");
-    configureNonEditableColumn(contractColumn, "contracts");
-    configureNonEditableColumn(guaranteeTypeColumn, "guarantee");
+    configureNonEditableColumn(contractColumn, "contract");
     configureNonEditableColumn(guarantorColumn, "guarantors");
-    configureNonEditableColumn(depositColumn, "deposit");
     configureNonEditableColumn(typeColumn, "clientType");
 
-    setupComboBoxColumn(contractColumn, "transparent-combobox",
-      client -> getContractsByClientCpfCnpj(client.getCpfCnpj())
-    );
+    cpfCnpjColumn.setCellValueFactory(cellData -> {
+      String cpfCnpj = cellData.getValue().getCpfCnpj();
+      String formattedCpfCnpj = CpfCnpj.applyCpfCnpjMaskFromDatabase(cpfCnpj);
+      return new SimpleStringProperty(formattedCpfCnpj);
+    });
 
-    setupComboBoxColumn(guarantorColumn, "transparent-combobox",
-      client -> getGuarantors(client.getCpfCnpj())
-    );
+    contractColumn.setCellValueFactory(cellData -> {
+      Integer contract = cellData.getValue().getContract();
+      String contractValue = (contract == 0 ? null : contract.toString());
+      return new SimpleStringProperty(contractValue);
+    });
+
+    setupComboBoxColumn(guarantorColumn, "transparent-combobox", col -> {
+      if (col.getClientType().equals(ClientType.TENANT)) {
+        int contract = col.getContract();
+        List<String> guarantors = clientService.getGuarantorsById(contract);
+        return
+        (guarantors != null && !guarantors.isEmpty()) ?
+        guarantors : Collections.emptyList();
+      } else return Collections.emptyList();
+    });
 
     birthDateColumn.setCellFactory(col -> {
       TextFieldTableCell<Client, LocalDate> cell =
@@ -226,29 +243,69 @@ public class ClientListController extends Main {
           return null;  // Prevent changes to the date from the user input
         }
       });
-      blockTypingExceptCtrlC(cell);
+      blockKeyboardExceptCtrlC(cell);
+      return cell;
+    });
+    guaranteeTypeColumn.setCellValueFactory(cellData -> {
+      String guaranteeType = "";
+      int contract = cellData.getValue().getContract();
+      
+      if (cellData.getValue().getClientType().equals(ClientType.TENANT))
+        guaranteeType = clientService.getGuaranteeTypeByContractId(contract);
+
+      return new SimpleStringProperty(guaranteeType);
+    });
+
+    guaranteeTypeColumn.setCellFactory(tc -> {
+      TextFieldTableCell<Client, String> cell =
+      new TextFieldTableCell<>(new StringConverter<String>() {
+        @Override
+        public String toString(String object) {
+          if (object == null) return "";
+          try {
+            return GuaranteeType.valueOf(object).toString();
+          } catch (IllegalArgumentException e) {
+            return object; // Fallback for invalid input
+          }
+        }
+
+        @Override
+        public String fromString(String string) {
+          return string; // No conversion needed
+        }
+      });
+      blockKeyboardExceptCtrlC(cell);
       return cell;
     });
 
-    depositColumn.setCellFactory(col -> {
-      TextFieldTableCell<Client, Double> cell =
-      new TextFieldTableCell<>(Currency.getCurrencyConverter());
+    depositColumn.setCellFactory(tc -> {
+      // Create a TableCell that will display the deposit value as editable
+      TableCell<Client, Double> cell = new TextFieldTableCell<Client, Double>()
+      {
+        @Override
+        public void updateItem(Double item, boolean empty) {
+          super.updateItem(item, empty);
+          if (empty || item == null) setText(null);
+          else setText(Currency.getCurrencyConverter().toString(item));
+        }
+      };
 
-      blockTypingExceptCtrlC(cell);
+    depositColumn.setCellValueFactory(cellData -> {
+      int contract = cellData.getValue().getContract();
+      Double deposit =
+        cellData.getValue().getClientType().equals(ClientType.TENANT) &&
+        clientService.getDeposit(contract) != 0 ?
+        clientService.getDeposit(contract) : null;
+        return new SimpleObjectProperty<>(deposit);
+      });
+      blockKeyboardExceptCtrlC(cell);
       return cell;
     });
-  }
-
-  private List <String> getContractsByClientCpfCnpj(String cpfCnpj) {
-    return clientService.getContractsByClientCpfCnpj(cpfCnpj);
-  }
-  private List <String> getGuarantors(String cpfCnpj) {
-    return clientService.getGuarantorsByClientCpfCnpj(cpfCnpj);
   }
 
   private void setupFilterCombobox() {
     filtersCombobox.setItems(FXCollections.observableArrayList(
-      "Nome",
+      "Contrato",
       "CPF | CNPJ",
       "Telefone",
       "Contrato",
@@ -283,10 +340,10 @@ public class ClientListController extends Main {
           comboBox.setEditable(isFocused());
           comboBox.focusedProperty().addListener(
           (observable, oldValue, newValue) -> {
-        	  clientTable.getSelectionModel().select(getIndex());
+            clientTable.getSelectionModel().select(getIndex());
             comboBox.setEditable(newValue);
           });
-          blockTypingExceptCtrlC(comboBox);
+          blockKeyboardExceptCtrlC(comboBox);
         }
       }
     });
@@ -487,10 +544,7 @@ public class ClientListController extends Main {
         try {
           clientService.update(client);
 
-          if (
-            alteredClient != null &&
-            alteredClient.equals(client)
-          ) {
+          if (alteredClient != null && alteredClient.equals(client)) {
             message.setText("");
             alteredClient = null;
             originalClientValues = null;
@@ -560,11 +614,11 @@ public class ClientListController extends Main {
 
       newClientStage.setTitle("Adicionar cliente");
       newClientStage.setScene(new Scene(root));
-      newClientStage.setWidth(640);
+      newClientStage.setWidth(720);
       newClientStage.setHeight(980);
 
       newClientStage.show();
-
+      newClientStage.setResizable(false);
     } catch (IOException e) {
       e.printStackTrace();
       Alerts.showAlert(

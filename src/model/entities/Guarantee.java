@@ -1,14 +1,19 @@
 package model.entities;
 
+import java.util.List;
+
 public class Guarantee {
   private GuaranteeType guaranteeType;
-  private boolean isSponsorMarried;
-  private String partnerName;
-  private String guarantorOrInstitutionName;
+  private List<String> guarantorNames;
+  private boolean isGuarantorMarried;
+  private String InstitutionName;
   private double depositValue;
 
-  public Guarantee(GuaranteeType guaranteeType) {
+  public Guarantee() {}
+
+  public Guarantee(GuaranteeType guaranteeType, List<String> guarantorNames) {
     this.guaranteeType = guaranteeType;
+    this.guarantorNames = guarantorNames;
   }
 
   public GuaranteeType getGuaranteeType() {
@@ -16,31 +21,31 @@ public class Guarantee {
   }
 
   public void setGuaranteeType(GuaranteeType guaranteeType) {
-	  this.guaranteeType = guaranteeType;
+    this.guaranteeType = guaranteeType;
   }
 
-  public boolean isSponsorMarried() {
-    return isSponsorMarried;
+  public List<String> getGuarantorNames() {
+    return guarantorNames;
   }
 
-  public void setSponsorMarried(boolean isSponsorMarried) {
-    this.isSponsorMarried = isSponsorMarried;
+  public void setGuarantorNames(List<String> guarantorNames) {
+    this.guarantorNames = guarantorNames;
   }
 
-  public String getPartnerName() {
-    return partnerName;
+  public boolean getIsGuarantorMarried() {
+    return isGuarantorMarried;
   }
 
-  public void setPartnerName(String partnerName) {
-    this.partnerName = partnerName;
+  public void setIsGuarantorMarried(boolean isGuarantorMarried) {
+    this.isGuarantorMarried = isGuarantorMarried;
   }
 
-  public String getGuarantorOrInstitutionName() {
-    return guarantorOrInstitutionName;
+  public String getInstitutionName() {
+    return InstitutionName;
   }
 
-  public void setGuarantorOrInstitutionName(String guarantorOrInstitutionName) {
-    this.guarantorOrInstitutionName = guarantorOrInstitutionName;
+  public void setInstitutionName(String InstitutionName) {
+    this.InstitutionName = InstitutionName;
   }
 
   public double getDepositValue() {
@@ -52,21 +57,24 @@ public class Guarantee {
   }
 
   public enum GuaranteeType {
-    DEPOSIT, GUARANTOR, CAPITALIZATION_TITLE, BAIL_INSURANCE;
+    DEPOSIT,
+    GUARANTOR,
+    CAPITALIZATION_TITLE,
+    BAIL_INSURANCE;
 
     @Override
     public String toString() {
       switch (this) {
-      case DEPOSIT:
-        return "Caução";
-      case GUARANTOR:
-        return "Fiador";
-      case CAPITALIZATION_TITLE:
-        return "Capitalização";
-      case BAIL_INSURANCE:
-        return "Seguro fiança";
-      default:
-        return super.toString(); // Fallback to the default name() if needed
+        case DEPOSIT:
+          return "Caução";
+        case GUARANTOR:
+          return "Fiador";
+        case CAPITALIZATION_TITLE:
+          return "Capitalização";
+        case BAIL_INSURANCE:
+          return "Seguro fiança";
+        default:
+          return super.toString();
       }
     }
   }

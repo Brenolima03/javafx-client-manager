@@ -21,7 +21,25 @@ public class CpfCnpj {
     return true;
   }
 
-  public static void applyCpfCnpjMask(
+  public static String applyCpfCnpjMaskFromDatabase(String cpfCnpj) {
+    if (cpfCnpj == null || cpfCnpj.isEmpty()) return "";
+
+    cpfCnpj = cpfCnpj.replaceAll("\\D", "");
+    
+    if (cpfCnpj.length() == 11)
+      return cpfCnpj.replaceFirst(
+        "(\\d{3})(\\d{3})(\\d{3})(\\d{2})", "$1.$2.$3-$4"
+      );
+
+    if (cpfCnpj.length() == 14)
+      return cpfCnpj.replaceFirst(
+        "(\\d{2})(\\d{3})(\\d{3})(\\d{4})(\\d{2})", "$1.$2.$3/$4-$5"
+      );
+
+    return cpfCnpj;
+  }
+
+  public static void applyCpfCnpjMaskOnInputFields(
     TextField cpfCnpjField, RadioButton cpfRadioButton,
     RadioButton cnpjRadioButton
   ) {
