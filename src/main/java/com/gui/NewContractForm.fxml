@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.geometry.Insets?>
+
+<VBox
+  fx:id="contractForm"
+  xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/21" 
+  alignment="TOP_CENTER" fx:controller="com.gui.NewContractFormController"
+  stylesheets="@../application/application.css" spacing="0"
+  style="-fx-padding: 0;">
+
+  <GridPane hgap="10" vgap="10" alignment="CENTER" styleClass="root"
+    style="-fx-padding: 50 0 0 0;">
+    <padding><Insets top="25" right="25" bottom="25" left="25"/></padding>
+
+    <!-- First Row -->
+    <Label text="Locatário" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+    <ComboBox fx:id="tenantField" prefWidth="300" GridPane.columnIndex="1"
+      GridPane.rowIndex="0"/>
+
+    <Label text="Locador" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+    <ComboBox fx:id="landlordField" prefWidth="300" GridPane.columnIndex="1" 
+      GridPane.rowIndex="1"/>
+
+    <!-- Estate ComboBox -->
+    <Label text="Imóvel" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+    <ComboBox fx:id="estateField" prefWidth="300" GridPane.columnIndex="1" 
+      GridPane.rowIndex="2"/>
+
+    <!-- Second Row -->
+    <Label text="Início da locação" GridPane.columnIndex="0"
+      GridPane.rowIndex="3"/>
+    <DatePicker fx:id="rentBeginningField" promptText="01/01/2025"
+      prefWidth="300" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+    <Label text="Fim da locação" GridPane.columnIndex="0"
+      GridPane.rowIndex="4"/>
+    <DatePicker fx:id="rentEndField" promptText="01/01/2026" prefWidth="300"
+      GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+
+    <!-- Data de assinatura do contrato -->
+    <Label text="Data de assinatura do contrato" GridPane.columnIndex="0"
+      GridPane.rowIndex="5"/>
+    <DatePicker fx:id="contractSigningDate" promptText="01/01/2025"
+      prefWidth="300" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+
+    <!-- Third Row -->
+    <Label text="Valor do aluguel" GridPane.columnIndex="0"
+      GridPane.rowIndex="6"/>
+    <TextField fx:id="rentValue" promptText="1000" prefWidth="300"
+      GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+
+    <Label text="Caução" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
+    <TextField fx:id="deposit" promptText="Valor da caução" prefWidth="300"
+      GridPane.columnIndex="1" GridPane.rowIndex="7"/>
+
+    <Label text="Conta de energia" GridPane.columnIndex="0"
+      GridPane.rowIndex="8"/>
+    <TextField fx:id="energyBill" promptText="100" prefWidth="300"
+      GridPane.columnIndex="1" GridPane.rowIndex="8"/>
+
+    <!-- Fourth Row -->
+    <Label text="Conta de água" GridPane.columnIndex="0" GridPane.rowIndex="9"/>
+    <TextField fx:id="waterBill" promptText="100" prefWidth="300"
+      GridPane.columnIndex="1" GridPane.rowIndex="9"/>
+
+    <!-- Fifth Row -->
+    <Label text="Tipo de garantia" GridPane.columnIndex="0"
+      GridPane.rowIndex="10"/>
+    <ComboBox fx:id="guaranteeType" prefWidth="300" GridPane.columnIndex="1"
+      GridPane.rowIndex="10"/>
+
+    <!-- Guarantor Name -->
+    <Label text="Nome do fiador" GridPane.columnIndex="0"
+      GridPane.rowIndex="11"/>
+    <TextField fx:id="guarantorName" promptText="Nome do fiador" prefWidth="300"
+      GridPane.columnIndex="1" GridPane.rowIndex="11"/>
+
+    <!-- Partner Name -->
+    <Label text="Nome do cônjuge" GridPane.columnIndex="0"
+      GridPane.rowIndex="12"/>
+    <TextField fx:id="partnerName" promptText="Nome do cônjuge" prefWidth="300"
+      GridPane.columnIndex="1" GridPane.rowIndex="12"/>
+  </GridPane>
+
+  <HBox spacing="10" alignment="CENTER" style="-fx-padding: 30 0 0 0;">
+    <Button text="Cancelar" fx:id="cancelButton" />
+    <Button text="Salvar" fx:id="saveButton" />
+  </HBox>
+</VBox>

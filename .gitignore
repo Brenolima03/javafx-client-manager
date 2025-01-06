@@ -35,5 +35,8 @@ nbdist/
 .settings/
 .metadata/
 
+# Visual Studio Code
+.vscode/
+
 # Database
 db.properties

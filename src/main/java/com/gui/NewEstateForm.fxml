@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.geometry.Insets?>
+
+<VBox
+  fx:id="estateForm"
+  xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/21" 
+  alignment="TOP_CENTER" fx:controller="com.gui.NewEstateFormController"
+  stylesheets="@../application/application.css" spacing="10"
+  style="-fx-padding: 0;">
+
+  <GridPane hgap="10" vgap="10" alignment="CENTER" styleClass="root"
+    style="-fx-padding: 20 0 0 0;">
+    <padding><Insets top="25" right="25" bottom="25" left="25"/></padding>
+
+    <!-- Labels and Input Fields -->
+    <Label text="Endereço:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+    <TextField fx:id="addressField" promptText="Digite o endereço"
+      GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+    <Label text="Número:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+    <TextField fx:id="numberField" promptText="Digite o número"
+      GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+    <Label text="Bairro:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+    <TextField fx:id="neighborhoodField" promptText="Digite o bairro"
+      GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+    <Label text="Cidade:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+    <TextField fx:id="cityField" promptText="Digite a cidade"
+      GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+    <Label text="Estado:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+    <ComboBox fx:id="stateComboBox" promptText="Selecione o estado"
+      GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+    <Label text="Locador:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+    <ComboBox fx:id="landlordField"
+      GridPane.columnIndex="1" GridPane.rowIndex="5" />
+
+    <Label text="Descrição:" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+    <TextField fx:id="descriptionField" promptText="Digite a descrição"
+      GridPane.columnIndex="1" GridPane.rowIndex="6" />
+  </GridPane>
+
+  <!-- Buttons -->
+  <HBox spacing="10" alignment="CENTER" style="-fx-padding: 30 0 0 0;">
+    <Button text="Cancelar" fx:id="cancelButton" />
+    <Button text="Salvar" fx:id="saveButton" />
+  </HBox>
+</VBox>
