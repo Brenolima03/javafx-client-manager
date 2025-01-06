@@ -152,9 +152,7 @@ public class ContractDaoJDBC implements ContractDao {
     PreparedStatement st = null;
     ResultSet generatedKeys = null;
     try {
-      String sql = """
-        UPDATE ESTATES SET TENANT_ID = ? WHERE ID = ?
-      """;
+      String sql = " UPDATE ESTATES SET TENANT_ID = ? WHERE ID = ?";
 
       st = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
       st.setInt(1, tenantId);

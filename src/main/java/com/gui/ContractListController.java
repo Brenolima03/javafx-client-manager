@@ -455,7 +455,9 @@ public class ContractListController {
         }
         try {
           return controllerClass.getDeclaredConstructor().newInstance();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+          System.err.println(e.getMessage());
+        }
         return null;
       });
 

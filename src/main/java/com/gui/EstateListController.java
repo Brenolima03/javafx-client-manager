@@ -129,7 +129,7 @@ public class EstateListController {
       currentStage.setScene(scene);
       currentStage.show();
     } catch (Exception e) {
-      System.err.println("Failed to open estate list: " + e.getMessage());
+      System.err.println(e.getMessage());
     }
   }
 
@@ -305,7 +305,9 @@ public class EstateListController {
         }
         try {
           return controllerClass.getDeclaredConstructor().newInstance();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+          System.err.println(e.getMessage());
+        }
         return null;
       });
 

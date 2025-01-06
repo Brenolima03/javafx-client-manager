@@ -43,7 +43,7 @@ public class ViewController {
         try {
           return controllerClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
-          e.printStackTrace();
+          System.err.println(e.getMessage());
           return null;
         }
       });
@@ -55,7 +55,7 @@ public class ViewController {
       currentStage.setTitle("Clientes");
       currentStage.show();
     } catch (IOException e) {
-      e.printStackTrace();
+      System.err.println(e.getMessage());
     }
   }
 
@@ -77,7 +77,7 @@ public class ViewController {
         try {
           return controllerClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
-          e.printStackTrace();
+          System.err.println(e.getMessage());
           return null;
         }
       });
@@ -91,7 +91,7 @@ public class ViewController {
       currentStage.setTitle("Imóveis");
       currentStage.show();
     } catch (IOException e) {
-      e.printStackTrace();
+      System.err.println(e.getMessage());
     }
   }
 
@@ -115,7 +115,7 @@ public class ViewController {
         try {
           return controllerClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
-          e.printStackTrace();
+          System.err.println(e.getMessage());
           return null;
         }
       });
@@ -129,7 +129,7 @@ public class ViewController {
       currentStage.setTitle("Contratos");
       currentStage.show();
     } catch (IOException e) {
-      e.printStackTrace();
+      System.err.println(e.getMessage());
     }
   }
 }

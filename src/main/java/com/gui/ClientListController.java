@@ -421,7 +421,9 @@ public class ClientListController extends Main {
         originalClientValues = null;
         clientTable.getSelectionModel().clearSelection();
       }
-    } catch (Exception e) {}
+    } catch (Exception e) {
+      System.err.println(e.getMessage());
+    }
   }
 
   private void setupButton(
@@ -583,7 +585,9 @@ public class ClientListController extends Main {
         }
         try {
           return controllerClass.getDeclaredConstructor().newInstance();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+          System.err.println(e.getMessage());
+        }
         return null;
       });
       Parent root = loader.load();

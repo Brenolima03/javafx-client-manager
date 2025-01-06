@@ -100,10 +100,8 @@ public class ClientDaoJDBC implements ClientDao {
   public void updateDao(Client obj) {
     PreparedStatement st = null;
     try {
-      st = conn.prepareStatement(
-        "UPDATE CLIENTS " +
-        "SET NAME = ?, TELEPHONE = ? WHERE ID = ?"
-      );
+      String sql = "UPDATE CLIENTS SET NAME = ?, TELEPHONE = ? WHERE ID = ?";
+      st = conn.prepareStatement(sql);
       st.setString(1, obj.getName());
       st.setString(2, obj.getTelephone());
       st.setInt(3, obj.getId());
@@ -343,7 +341,7 @@ public class ClientDaoJDBC implements ClientDao {
         if (resultSet.next()) return resultSet.getDouble("DEPOSIT");
       }
     } catch (SQLException e) {
-      e.printStackTrace();
+      System.err.println(e.getMessage());
     }
     return 0;
   }
