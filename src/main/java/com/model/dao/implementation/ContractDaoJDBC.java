@@ -181,8 +181,12 @@ public class ContractDaoJDBC implements ContractDao {
       contract.setId(rs.getInt("ID"));
       contract.setTenant(rs.getInt("TENANT_ID"));
       contract.setLandlord(rs.getInt("LANDLORD_ID"));
+      contract.setEstate(rs.getInt("ESTATE_ID"));
       contract.setRentBeginning(rs.getDate("RENT_BEGINNING").toLocalDate());
       contract.setRentEnd(rs.getDate("RENT_END").toLocalDate());
+      contract.setContractSigningDate(
+        rs.getDate("CONTRACT_SIGNING_DATE").toLocalDate()
+      );
       contract.setRentValue(rs.getDouble("RENT_VALUE"));
 
       // Instantiate the Guarantee object

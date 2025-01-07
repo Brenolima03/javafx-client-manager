@@ -7,11 +7,14 @@ import java.util.List;
 import java.util.function.Function;
 
 import com.db.DbException;
+import com.model.entities.Client;
 import com.model.entities.Contract;
+import com.model.entities.Estate;
 import com.model.entities.Guarantee.GuaranteeType;
 import com.services.ClientService;
 import com.services.ContractService;
 import com.services.EstateService;
+import com.utils.ContractBuilder;
 import com.utils.Currency;
 import com.utils.Icons;
 
@@ -25,6 +28,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -41,6 +45,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
@@ -89,6 +94,9 @@ public class ContractListController {
 
   @FXML
   private TableColumn <Contract, List <String>> guarantorColumn;
+
+  @FXML
+  private TableColumn <Contract, String> downloadColumn;
 
   @FXML
   private Pagination pagination;
@@ -217,6 +225,7 @@ public class ContractListController {
 
   public void refreshTableData() {
     contractTable.setItems(getContractData(currentPage));
+    setupActionColumn();
   }
 
   public void setupPagination() {
@@ -283,14 +292,16 @@ public class ContractListController {
 
     tenantColumn.setCellValueFactory(col -> {
       Contract contract = col.getValue();
-      String tenant = clientService.findClientById(contract.getTenant());
-      return new SimpleStringProperty(tenant);
+      Client tenantObj = clientService.findClientById(contract.getTenant());
+      String tenantName = tenantObj.getName();
+      return new SimpleStringProperty(tenantName);
     });
 
     landlordColumn.setCellValueFactory(col -> {
       Contract contract = col.getValue();
-      String landlord = clientService.findClientById(contract.getLandlord());
-      return new SimpleStringProperty(landlord);
+      Client landlordObj = clientService.findClientById(contract.getLandlord());
+      String landlordName = landlordObj.getName();
+      return new SimpleStringProperty(landlordName);
     });
     rentBeginningColumn.setCellFactory(col -> {
       TextFieldTableCell <Contract, LocalDate> cell =
@@ -483,6 +494,40 @@ public class ContractListController {
     }
   }
 
+  private void setupActionColumn() {
+    downloadColumn.setCellFactory(param -> new TableCell<Contract, String>() {
+      private final Button downloadButton = new Button();
+      private final HBox actionBox = new HBox(19, downloadButton);
+
+      {
+        setupButton(
+          downloadButton, "src/main/java/com/icons/download.png", event -> {
+          Contract contract = getTableRow().getItem();
+          if (contract != null) {
+            int tenantId = contract.getTenant();
+            int landlordId = contract.getLandlord();
+            int estateId = contract.getEstate();
+
+            Client tenantObj = clientService.findClientById(tenantId);
+            Client landlordObj = clientService.findClientById(landlordId);
+            Estate estateObj = estateService.findState(estateId);
+
+            ContractBuilder.emitContract(
+              tenantObj, landlordObj, estateObj, contract
+            );
+          }
+        }, true);
+        actionBox.setAlignment(Pos.CENTER);
+      }
+      // Show the button
+      @Override
+      protected void updateItem(String item, boolean empty) {
+        super.updateItem(item, empty);
+        setGraphic(empty ? null : actionBox);
+      }
+    });
+  }
+
   public void initialize() {
     try {
       if (contractService == null) {
@@ -505,7 +550,7 @@ public class ContractListController {
       setupPagination();
 
       // Set up column sizes
-      setupCell(contractIdColumn, 225);
+      setupCell(contractIdColumn, 140);
       setupCell(tenantColumn, 225);
       setupCell(landlordColumn, 225);
 
