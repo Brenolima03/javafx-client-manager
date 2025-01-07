@@ -15,6 +15,7 @@ import com.db.DbException;
 import com.model.dao.ClientDao;
 import com.model.entities.Client;
 import com.model.entities.Client.ClientType;
+import com.model.entities.Client.MaritalStatus;
 
 public class ClientDaoJDBC implements ClientDao {
   private Connection conn;
@@ -35,7 +36,7 @@ public class ClientDaoJDBC implements ClientDao {
       Date birthDate = obj.getBirthDate() != null ?
         Date.valueOf(obj.getBirthDate()) : null;
       String clientType = obj.getClientType().name();
-      boolean isMarried = obj.isMarried();
+      String maritalStatus = obj.getMaritalStatus().name();
       String address = obj.getAddress();
       String nationality = obj.getNationality();
       String profession = obj.getProfession();
@@ -47,7 +48,7 @@ public class ClientDaoJDBC implements ClientDao {
       String sql = """
         INSERT INTO CLIENTS (
         NAME, CPF_CNPJ, RG, ISSUING_ORGANIZATION, TELEPHONE, BIRTH_DATE, 
-        CLIENT_TYPE, IS_MARRIED, ADDRESS, NATIONALITY, PROFESSION, 
+        CLIENT_TYPE, MARITAL_STATUS, ADDRESS, NATIONALITY, PROFESSION, 
         NEIGHBORHOOD, CITY, STATE, ZIP
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       """;
@@ -59,7 +60,7 @@ public class ClientDaoJDBC implements ClientDao {
       st.setString(5, telephone);
       st.setDate(6, birthDate);
       st.setString(7, clientType);
-      st.setBoolean(8, isMarried);
+      st.setString(8, maritalStatus);
       st.setString(9, address);
       st.setString(10, nationality);
       st.setString(11, profession);
@@ -82,29 +83,34 @@ public class ClientDaoJDBC implements ClientDao {
   public Client findClientByIdDao(int id) {
     String sql = """
       SELECT ID, NAME, CPF_CNPJ, RG, ISSUING_ORGANIZATION, BIRTH_DATE,
-      TELEPHONE, CLIENT_TYPE, IS_MARRIED, ADDRESS, NATIONALITY, PROFESSION,
+      TELEPHONE, CLIENT_TYPE, MARITAL_STATUS, ADDRESS, NATIONALITY, PROFESSION,
       NEIGHBORHOOD, CITY, STATE, ZIP FROM CLIENTS WHERE ID = ?
     """;
     try (PreparedStatement ps = conn.prepareStatement(sql)) {
       ps.setInt(1, id);
       ResultSet rs = ps.executeQuery();
-  
+
       if (rs.next()) {
         int clientId = rs.getInt("ID");
         String name = rs.getString("NAME");
         String cpfCnpj = rs.getString("CPF_CNPJ");
         String rg = rs.getString("RG");
         String issuingOrganization = rs.getString("ISSUING_ORGANIZATION");
-        LocalDate birthDate = rs.getDate("BIRTH_DATE").toLocalDate();
+        LocalDate birthDate = rs.getDate("BIRTH_DATE") != null ?
+          rs.getDate("BIRTH_DATE").toLocalDate() : null;
         String telephone = rs.getString("TELEPHONE");
-        
+
         // Enum mapping for clientType
         String clientTypeString = rs.getString("CLIENT_TYPE");
-        ClientType clientType = ClientType.valueOf(
-          clientTypeString != null ? clientTypeString : "TENANT"
-        );
-        
-        boolean isMarried = rs.getBoolean("IS_MARRIED");
+        Client.ClientType clientType = clientTypeString != null ?
+          Client.ClientType.valueOf(clientTypeString.toUpperCase()) :
+          Client.ClientType.TENANT;
+
+        // Enum mapping for maritalStatus
+        String maritalStatusStr = rs.getString("MARITAL_STATUS");
+        Client.MaritalStatus maritalStatus = maritalStatusStr != null ?
+          Client.MaritalStatus.valueOf(maritalStatusStr.toUpperCase()) : null;
+
         String address = rs.getString("ADDRESS");
         String nationality = rs.getString("NATIONALITY");
         String profession = rs.getString("PROFESSION");
@@ -112,11 +118,13 @@ public class ClientDaoJDBC implements ClientDao {
         String city = rs.getString("CITY");
         String state = rs.getString("STATE");
         String zip = rs.getString("ZIP");
+
         int contract = getContractIdByClientId(id);
+
         return new Client(
           clientId, name, cpfCnpj, rg, issuingOrganization, birthDate, contract,
-          telephone, clientType, isMarried, address, nationality, profession,
-          neighborhood, city, state, zip
+          telephone, clientType, maritalStatus, address, nationality,
+          profession, neighborhood, city, state, zip
         );
       }
       return null;
@@ -388,20 +396,26 @@ public class ClientDaoJDBC implements ClientDao {
     Client.ClientType clientType =
       Client.ClientType.valueOf(clientTypeStr.toUpperCase());
 
-    boolean isMarried = false;
-    String address = null;
-    String nationality = null;
-    String profession = null;
-    String neighborhood = null;
-    String city = null;
-    String state = null;
-    String zip = null;
+    String maritalStatusStr = rs.getString("MARITAL_STATUS");
+    MaritalStatus maritalStatus = maritalStatusStr != null
+      ? MaritalStatus.valueOf(maritalStatusStr.toUpperCase())
+      : null;
+
+    String address = rs.getString("ADDRESS");
+    String nationality = rs.getString("NATIONALITY");
+    String profession = rs.getString("PROFESSION");
+    String neighborhood = rs.getString("NEIGHBORHOOD");
+    String city = rs.getString("CITY");
+    String state = rs.getString("STATE");
+    String zip = rs.getString("ZIP");
+
     int contractID = getContractIdByClientId(id);
 
+    // Return the Client object
     return new Client(
       id, name, cpfCnpj, null, null, 
       birthDate, contractID, telephone, 
-      clientType, isMarried, address,
+      clientType, maritalStatus, address,
       nationality, profession, neighborhood, 
       city, state, zip
     );

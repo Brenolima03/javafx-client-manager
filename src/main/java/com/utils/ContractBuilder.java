@@ -55,8 +55,7 @@ public class ContractBuilder {
     replacements.put("{LANDLORD_NAME}", landlord.getName());
     replacements.put("{LANDLORD_NATIONALITY}", landlord.getNationality());
     replacements.put(
-      "{LANDLORD_MARITAL_STATUS}",
-      landlord.isMarried() ? "casado(a)" : "solteiro(a)"
+      "{LANDLORD_MARITAL_STATUS}", landlord.getMaritalStatus().toString()
     );
     replacements.put("{LANDLORD_PROFESSION}", landlord.getProfession());
     replacements.put("{LANDLORD_ID}", landlord.getRg());
@@ -68,8 +67,7 @@ public class ContractBuilder {
     replacements.put("{TENANT_NAME}", tenant.getName());
     replacements.put("{TENANT_NATIONALITY}", tenant.getNationality());
     replacements.put(
-      "{TENANT_MARITAL_STATUS}",
-      tenant.isMarried() ? "casado(a)" : "solteiro(a)"
+      "{TENANT_MARITAL_STATUS}", tenant.getMaritalStatus().toString()
     );
     replacements.put("{TENANT_PROFESSION}", tenant.getProfession());
     replacements.put("{TENANT_ID}", tenant.getRg());

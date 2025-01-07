@@ -63,12 +63,8 @@
 
     <!-- Third Row -->
     <Label text="Estado Civil" GridPane.columnIndex="0" GridPane.rowIndex="8"/>
-    <HBox spacing="20" alignment="CENTER_LEFT" GridPane.columnIndex="1"
-      GridPane.rowIndex="8">
-      <RadioButton text="Casado(a)" fx:id="marriedRadioButton"/>
-      <RadioButton
-        text="Solteiro(a)" fx:id="singleRadioButton" selected="true"/>
-    </HBox>
+    <ComboBox fx:id="maritalStatusComboBox" prefWidth="250"
+      GridPane.columnIndex="1" GridPane.rowIndex="8"/>
 
     <Label text="Nacionalidade" GridPane.columnIndex="0" GridPane.rowIndex="9"/>
     <TextField fx:id="nationalityField" promptText="Nacionalidade"

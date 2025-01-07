@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import com.db.DbException;
 import com.model.entities.Client;
 import com.model.entities.Client.ClientType;
+import com.model.entities.Client.MaritalStatus;
 import com.services.ClientService;
 import com.utils.CpfCnpj;
 import com.utils.Icons;
@@ -64,10 +65,7 @@ public class NewClientFormController {
   private TextField nationalityField;
 
   @FXML
-  private RadioButton marriedRadioButton;
-
-  @FXML
-  private RadioButton singleRadioButton;
+  private ComboBox<String> maritalStatusComboBox;
 
   @FXML
   private TextField professionField;
@@ -110,7 +108,12 @@ public class NewClientFormController {
       );
 
     typeComboBox.getItems().addAll("Locador", "Locatário");
-    typeComboBox.setValue("Locador"); // Default selection
+    typeComboBox.setValue("Locador");
+
+    maritalStatusComboBox.getItems().addAll(
+      "solteiro(a)", "casado(a)", "divorciado(a)", "viúvo(a)"
+    );
+    maritalStatusComboBox.setValue("solteiro(a)");
 
     TelephoneMask.applyTelephoneMask(telephoneField);
 
@@ -120,9 +123,6 @@ public class NewClientFormController {
     cpfRadioButton.setToggleGroup(cpfCnpjToggleGroup);
     cnpjRadioButton.setToggleGroup(cpfCnpjToggleGroup);
 
-    ToggleGroup maritalStatusToggleGroup = new ToggleGroup();
-    marriedRadioButton.setToggleGroup(maritalStatusToggleGroup);
-    singleRadioButton.setToggleGroup(maritalStatusToggleGroup);
 
     cpfRadioButton.setOnAction(
       event -> CpfCnpj.updateCpfCnpjMask(cpfRadioButton, cpfCnpjField)
@@ -154,17 +154,13 @@ public class NewClientFormController {
 
   private void handleSave() {
     String name = nameField.getText();
-    String cpfCnpj =
-      cpfCnpjField.getText().replaceAll("\\D", "");
+    String cpfCnpj = cpfCnpjField.getText().replaceAll("\\D", "");
     String rg = rgField.getText().replaceAll("\\D", "");
     String issuingOrganization = issuingOrganizationField.getText();
-    String telephone =
-      telephoneField.getText().replaceAll("\\D", "");
+    String telephone = telephoneField.getText().replaceAll("\\D", "");
     LocalDate birthDate = birthDateField.getValue();
     String selectedType = typeComboBox.getValue();
     String nationality = nationalityField.getText();
-    boolean isMarried = marriedRadioButton.isSelected();
-
     String profession = professionField.getText();
     String address = addressField.getText();
     String neighborhood = neighborhoodField.getText();
@@ -182,6 +178,18 @@ public class NewClientFormController {
     ClientType clientType =
       "Locador".equals(selectedType) ? ClientType.LANDLORD : ClientType.TENANT;
 
+    String selectedMaritalStatus = maritalStatusComboBox.getValue();
+
+    MaritalStatus maritalStatus = switch (selectedMaritalStatus) {
+      case "solteiro(a)" -> MaritalStatus.SINGLE;
+      case "casado(a)" -> MaritalStatus.MARRIED;
+      case "divorciado(a)" -> MaritalStatus.DIVORCED;
+      case "viúvo(a)" -> MaritalStatus.WIDOWED;
+      default -> throw new IllegalArgumentException(
+        "Unknown marital status: " + selectedMaritalStatus
+      );
+    };
+
     if (client == null) client = new Client();
     if (!CpfCnpj.isValid(cpfCnpj)) return;
 
@@ -193,7 +201,7 @@ public class NewClientFormController {
     client.setBirthDate(birthDate);
     client.setClientType(clientType);
     client.setNationality(nationality);
-    client.setIsMarried(isMarried);
+    client.setMaritalStatus(maritalStatus);
     client.setProfession(profession);
     client.setAddress(address);
     client.setNeighborhood(neighborhood);

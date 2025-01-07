@@ -13,7 +13,7 @@ public class Client {
   private int contract;
   private String telephone;
   private ClientType clientType;
-  private boolean isMarried;
+  private MaritalStatus maritalStatus;
   private String address;
   private String nationality;
   private String profession;
@@ -28,14 +28,29 @@ public class Client {
 
     @Override
     public String toString() {
-      switch (this) {
-        case TENANT:
-          return "Locatário";
-        case LANDLORD:
-          return "Locador";
-        default:
-          return super.toString(); // Fallback to the default name() if needed
-      }
+      return switch (this) {
+        case TENANT -> "Locatário";
+        case LANDLORD -> "Locador";
+        default -> super.toString();
+      }; // Fallback to the default name() if needed
+    }
+  }
+
+  public enum MaritalStatus {
+    SINGLE,
+    MARRIED,
+    DIVORCED,
+    WIDOWED;
+
+    @Override
+    public String toString() {
+      return switch (this) {
+        case SINGLE -> "solteiro(a)";
+        case MARRIED -> "casado(a)";
+        case DIVORCED -> "divorciado(a)";
+        case WIDOWED -> "viúvo(a)";
+        default -> super.toString();
+      }; // Fallback to the default name() if needed
     }
   }
 
@@ -44,8 +59,9 @@ public class Client {
   public Client(
     int id, String name, String cpfCnpj, String rg, String issuingOrganization,
     LocalDate birthDate, int contract, String telephone, ClientType clientType,
-    boolean isMarried, String address, String nationality, String profession,
-    String neighborhood, String city, String state, String zip
+    MaritalStatus maritalStatus, String address, String nationality,
+    String profession, String neighborhood, String city, String state,
+    String zip
   ) {
     this.id = id;
     this.name = name;
@@ -56,7 +72,7 @@ public class Client {
     this.contract = contract;
     this.telephone = telephone;
     this.clientType = (clientType != null) ? clientType : ClientType.TENANT;
-    this.isMarried = isMarried;
+    this.maritalStatus = maritalStatus;
     this.address = address;
     this.nationality = nationality;
     this.profession = profession;
@@ -138,12 +154,12 @@ public class Client {
     this.clientType = clientType;
   }
 
-  public boolean isMarried() {
-    return isMarried;
+  public MaritalStatus getMaritalStatus() {
+    return maritalStatus;
   }
 
-  public void setIsMarried(boolean isMarried) {
-    this.isMarried = isMarried;
+  public void setMaritalStatus(MaritalStatus maritalStatus) {
+    this.maritalStatus = maritalStatus;
   }
 
   public String getAddress() {
