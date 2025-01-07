@@ -235,3 +235,19 @@ VBox > Label,
 #cancelButton:hover {
   -fx-background-color: #e53935;
 }
+
+/* Target only the TextField elements inside the estateForm VBox */
+#estateForm #addressField, 
+#estateForm #numberField, 
+#estateForm #neighborhoodField, 
+#estateForm #cityField, 
+#estateForm #descriptionField {
+  -fx-pref-width: 300px; /* Adjust this value as needed */
+}
+
+/* Target only ComboBox elements inside the estateForm VBox */
+#estateForm #stateComboBox, 
+#estateForm #landlordField {
+  -fx-pref-width: 300px; /* Adjust this value as needed */
+}
+

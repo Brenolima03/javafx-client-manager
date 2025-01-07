@@ -126,6 +126,7 @@ public class Estate {
     sb.append(", tenantId=").append(tenantId);
     sb.append(", landlordId=").append(landlordId);
     sb.append(", address=").append(address);
+    sb.append(", number=").append(number);
     sb.append(", neighborhood=").append(neighborhood);
     sb.append(", city=").append(city);
     sb.append(", state=").append(state);

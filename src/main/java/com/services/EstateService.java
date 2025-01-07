@@ -18,6 +18,10 @@ public class EstateService {
     return dao.findAllEstatesDao();
   }
 
+  public Estate findState(int id) {
+    return dao.findStateDao(id);
+  }
+
   public List<Estate> search(String filter, String argument) {
     return dao.searchDao(filter, argument);
   }

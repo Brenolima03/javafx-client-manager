@@ -59,6 +59,39 @@ public class EstateDaoJDBC implements EstateDao {
   }
 
   @Override
+  public Estate findStateDao(int id) {
+    String sql = """
+      SELECT ID, TENANT_ID, LANDLORD_ID, ADDRESS, NUMBER, NEIGHBORHOOD, CITY,
+      STATE, DESCRIPTION FROM ESTATES WHERE ID = ?        
+    """;
+
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setInt(1, id);
+      ResultSet rs = ps.executeQuery();
+  
+      if (rs.next()) {
+        int estateId = rs.getInt("ID");
+        int tenantId = rs.getInt("TENANT_ID");
+        int landlordId = rs.getInt("LANDLORD_ID");
+        String address = rs.getString("ADDRESS");
+        int number = rs.getInt("NUMBER");
+        String neighborhood = rs.getString("NEIGHBORHOOD");
+        String city = rs.getString("CITY");
+        String state = rs.getString("STATE");
+        String description = rs.getString("DESCRIPTION");
+  
+        return new Estate(
+          estateId, tenantId, landlordId, address, number,
+          neighborhood, city, state, description
+        );
+      }
+      return null;
+    } catch (SQLException e) {
+      throw new DbException(e.getMessage());
+    }
+  }
+
+  @Override
   public List<Estate> findAllEstatesDao() {
     List<Estate> estates = new ArrayList<>();
     PreparedStatement st = null;

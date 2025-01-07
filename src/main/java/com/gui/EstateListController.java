@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.db.DbException;
+import com.model.entities.Client;
 import com.model.entities.Estate;
 import com.services.ClientService;
 import com.services.EstateService;
@@ -231,13 +232,15 @@ public class EstateListController {
   
     tenantColumn.setCellValueFactory(col -> {
       int tenantId = col.getValue().getTenantId();
-      String tenant = clientService.findClientById(tenantId);
+      Client tenantObj = clientService.findClientById(tenantId);
+      String tenant = tenantObj.getName();
       return new SimpleStringProperty(tenant);
     });
   
     landlordColumn.setCellValueFactory(col -> {
       int landlordId = col.getValue().getLandlordId();
-      String landlord = clientService.findClientById(landlordId);
+      Client landlordObj = clientService.findClientById(landlordId);
+      String landlord = landlordObj.getName();
       return new SimpleStringProperty(landlord);
     });
   }
@@ -320,7 +323,7 @@ public class EstateListController {
       newEstateStage.setTitle("Adicionar imóvel");
       newEstateStage.setScene(new Scene(root));
       newEstateStage.setWidth(640);
-      newEstateStage.setHeight(920);
+      newEstateStage.setHeight(580);
 
       // Show the new Estate form stage
       newEstateStage.show();
