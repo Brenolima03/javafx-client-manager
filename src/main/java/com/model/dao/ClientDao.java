@@ -6,7 +6,7 @@ import com.model.entities.Client;
 
 public interface ClientDao {
   void insertDao(Client obj);
-  String findClientByIdDao(int id);
+  Client findClientByIdDao(int id);
   List<Client> findAllDao();
   void updateDao(Client obj);
   void deleteByIdDao(int id);

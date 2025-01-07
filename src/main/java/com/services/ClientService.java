@@ -17,7 +17,7 @@ public class ClientService {
     dao.insertDao(obj);
   }
 
-  public String findClientById(int id) {
+  public Client findClientById(int id) {
     return dao.findClientByIdDao(id);
   }
 

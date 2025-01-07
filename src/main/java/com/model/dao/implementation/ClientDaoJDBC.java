@@ -48,7 +48,7 @@ public class ClientDaoJDBC implements ClientDao {
         INSERT INTO CLIENTS (
         NAME, CPF_CNPJ, RG, ISSUING_ORGANIZATION, TELEPHONE, BIRTH_DATE, 
         CLIENT_TYPE, IS_MARRIED, ADDRESS, NATIONALITY, PROFESSION, 
-        NEIGHBORHOOD, CITY, STATE, CEP
+        NEIGHBORHOOD, CITY, STATE, ZIP
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       """;
       st = conn.prepareStatement(sql);
@@ -79,22 +79,51 @@ public class ClientDaoJDBC implements ClientDao {
   }
 
   @Override
-  public String findClientByIdDao(int id) {
-    String clientName = null;
-    try (PreparedStatement ps = conn.prepareStatement(
-      "SELECT NAME FROM CLIENTS WHERE ID = ?"
-    )) {
+  public Client findClientByIdDao(int id) {
+    String sql = """
+      SELECT ID, NAME, CPF_CNPJ, RG, ISSUING_ORGANIZATION, BIRTH_DATE,
+      TELEPHONE, CLIENT_TYPE, IS_MARRIED, ADDRESS, NATIONALITY, PROFESSION,
+      NEIGHBORHOOD, CITY, STATE, ZIP FROM CLIENTS WHERE ID = ?
+    """;
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
       ps.setInt(1, id);
       ResultSet rs = ps.executeQuery();
-
-      if (rs.next())
-          clientName = rs.getString("NAME");
-
-      return clientName;
+  
+      if (rs.next()) {
+        int clientId = rs.getInt("ID");
+        String name = rs.getString("NAME");
+        String cpfCnpj = rs.getString("CPF_CNPJ");
+        String rg = rs.getString("RG");
+        String issuingOrganization = rs.getString("ISSUING_ORGANIZATION");
+        LocalDate birthDate = rs.getDate("BIRTH_DATE").toLocalDate();
+        String telephone = rs.getString("TELEPHONE");
+        
+        // Enum mapping for clientType
+        String clientTypeString = rs.getString("CLIENT_TYPE");
+        ClientType clientType = ClientType.valueOf(
+          clientTypeString != null ? clientTypeString : "TENANT"
+        );
+        
+        boolean isMarried = rs.getBoolean("IS_MARRIED");
+        String address = rs.getString("ADDRESS");
+        String nationality = rs.getString("NATIONALITY");
+        String profession = rs.getString("PROFESSION");
+        String neighborhood = rs.getString("NEIGHBORHOOD");
+        String city = rs.getString("CITY");
+        String state = rs.getString("STATE");
+        String zip = rs.getString("ZIP");
+        int contract = getContractIdByClientId(id);
+        return new Client(
+          clientId, name, cpfCnpj, rg, issuingOrganization, birthDate, contract,
+          telephone, clientType, isMarried, address, nationality, profession,
+          neighborhood, city, state, zip
+        );
+      }
+      return null;
     } catch (SQLException e) {
       throw new DbException(e.getMessage());
     }
-  }
+  }  
 
   @Override
   public void updateDao(Client obj) {
