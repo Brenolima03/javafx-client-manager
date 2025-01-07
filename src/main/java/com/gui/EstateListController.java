@@ -229,14 +229,14 @@ public class EstateListController {
     configureNonEditableColumn(tenantColumn, "tenantId");
     configureNonEditableColumn(landlordColumn, "landlordId");
     configureNonEditableColumn(descriptionColumn, "description");
-  
+
     tenantColumn.setCellValueFactory(col -> {
       int tenantId = col.getValue().getTenantId();
       Client tenantObj = clientService.findClientById(tenantId);
-      String tenant = tenantObj.getName();
+      String tenant = (tenantObj != null) ? tenantObj.getName() : "";
       return new SimpleStringProperty(tenant);
     });
-  
+
     landlordColumn.setCellValueFactory(col -> {
       int landlordId = col.getValue().getLandlordId();
       Client landlordObj = clientService.findClientById(landlordId);
@@ -244,7 +244,6 @@ public class EstateListController {
       return new SimpleStringProperty(landlord);
     });
   }
-  
 
   private void searchEstates() {
     String filter = filtersCombobox.getSelectionModel().getSelectedItem();
@@ -291,6 +290,7 @@ public class EstateListController {
       );
     }
   }
+
   private void openNewEstateForm() {
     try {
       FXMLLoader loader = new FXMLLoader(
