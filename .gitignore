@@ -40,3 +40,6 @@ nbdist/
 
 # Database
 db.properties
+
+# Contract
+ContractModel.docx
