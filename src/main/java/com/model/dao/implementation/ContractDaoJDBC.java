@@ -188,6 +188,8 @@ public class ContractDaoJDBC implements ContractDao {
         rs.getDate("CONTRACT_SIGNING_DATE").toLocalDate()
       );
       contract.setRentValue(rs.getDouble("RENT_VALUE"));
+      contract.setWaterBill(rs.getDouble("WATER_BILL"));
+      contract.setEnergyBill(rs.getDouble("ENERGY_BILL"));
 
       // Instantiate the Guarantee object
       Guarantee guarantee = new Guarantee();
