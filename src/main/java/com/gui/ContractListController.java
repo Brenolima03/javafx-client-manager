@@ -502,21 +502,34 @@ public class ContractListController {
       {
         setupButton(
           downloadButton, "src/main/java/com/icons/download.png", event -> {
-          Contract contract = getTableRow().getItem();
-          if (contract != null) {
-            int tenantId = contract.getTenant();
-            int landlordId = contract.getLandlord();
-            int estateId = contract.getEstate();
+            Contract contract = getTableRow().getItem();
+            if (contract != null) {
+              int tenantId = contract.getTenant();
+              int landlordId = contract.getLandlord();
+              int estateId = contract.getEstate();
 
-            Client tenantObj = clientService.findClientById(tenantId);
-            Client landlordObj = clientService.findClientById(landlordId);
-            Estate estateObj = estateService.findState(estateId);
+              Client tenantObj = clientService.findClientById(tenantId);
+              Client landlordObj = clientService.findClientById(landlordId);
+              Estate estateObj = estateService.findState(estateId);
 
-            ContractBuilder.emitContract(
-              tenantObj, landlordObj, estateObj, contract
-            );
-          }
-        }, true);
+              try {
+                ContractBuilder.emitContract(
+                  tenantObj, landlordObj, estateObj, contract
+                );
+
+                Alerts.showAlert(
+                  "Sucesso", "Contrato emitido com sucesso!",
+                  null, AlertType.INFORMATION
+                );
+              } catch (Exception e) {
+                Alerts.showAlert(
+                  "Erro",
+                  "Falha ao emitir o contrato. Entre em contato com o suporte.",
+                  e.getMessage(), AlertType.ERROR
+                );
+              }
+            }
+          }, true);
         actionBox.setAlignment(Pos.CENTER);
       }
       // Show the button
