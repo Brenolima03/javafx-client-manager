@@ -17,7 +17,7 @@ import com.model.entities.Contract;
 import com.model.entities.Guarantee;
 
 public class ContractDaoJDBC implements ContractDao {
-  private Connection conn;
+  private final Connection conn;
 
   public ContractDaoJDBC(Connection conn) {
     this.conn = conn;
@@ -118,7 +118,7 @@ public class ContractDaoJDBC implements ContractDao {
       List<String> guarantors = guarantee.getGuarantorNames();
       String guarantorName = guarantors.get(0);
       String partnerName = guarantors.size() > 1 ? guarantors.get(1) : null;
-      boolean isMarried = !partnerName.trim().isEmpty();
+      boolean isMarried = partnerName != null && !partnerName.trim().isEmpty();
 
       String sql = """
         INSERT INTO GUARANTORS (TENANT_ID, GUARANTOR_NAME, PARTNER_NAME, 
