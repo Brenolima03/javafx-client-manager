@@ -290,14 +290,14 @@ public class ClientDaoJDBC implements ClientDao {
       ps.setInt(1, pageSize);
       ps.setInt(2, (page - 1) * pageSize);
 
-      List<Client> CLIENTS = new ArrayList<>();
+      List<Client> clients = new ArrayList<>();
       ResultSet rs = ps.executeQuery();
 
       while (rs.next()) {
         Client client = instantiateClientDao(rs);
-        CLIENTS.add(client);
+        clients.add(client);
       }
-      return CLIENTS;
+      return clients;
 
     } catch (SQLException e) {
       throw new DbException(e.getMessage());
