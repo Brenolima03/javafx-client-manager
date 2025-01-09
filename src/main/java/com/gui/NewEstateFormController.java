@@ -88,6 +88,7 @@ public class NewEstateFormController {
     setupButtons();
     populateTenantAndLandlordFields();
     States.populateStateCombobox(stateComboBox);
+    stateComboBox.setValue("MS");
   }
 
   private void setupButtons() {
@@ -121,7 +122,7 @@ public class NewEstateFormController {
 
   private void handleSave() {
     if (estate == null) estate = new Estate();
-
+  
     // Retrieve values from the form fields
     String address = addressField.getText();
     String number = numberField.getText();
@@ -130,13 +131,35 @@ public class NewEstateFormController {
     String state = stateComboBox.getValue();
     String landlord = landlordField.getValue();
     String description = descriptionField.getText();
-  
-    if (
-      address.isEmpty() || number.isEmpty() ||
-      neighborhood.isEmpty() || city.isEmpty() || state == null ||
-      landlord == null || description.isEmpty()
-    ) return;
+    String invalidField = null;
 
+    // Validate each field and identify the invalid one
+    if (address == null || address.trim().isEmpty()) {
+      invalidField = "Endereço";
+    } else if (number == null || number.trim().isEmpty()) {
+      invalidField = "Número";
+    } else if (neighborhood == null || neighborhood.trim().isEmpty()) {
+      invalidField = "Bairro";
+    } else if (city == null || city.trim().isEmpty()) {
+      invalidField = "Cidade";
+    } else if (landlord == null || landlord.trim().isEmpty()) {
+      invalidField = "Locador";
+    } else if (description == null || description.trim().isEmpty()) {
+      invalidField = "Descrição";
+    }
+
+    // If an invalid field is detected, show an alert and return
+    if (invalidField != null) {
+      Alerts.showAlert(
+        "Erro de Validação",
+        "Campo inválido: " + invalidField,
+        null,
+        AlertType.WARNING
+      );
+      return;
+    }
+
+    // Set the values into the Estate object
     estate.setAddress(address);
     estate.setNumber(Integer.parseInt(number));
     estate.setNeighborhood(neighborhood);
@@ -144,15 +167,21 @@ public class NewEstateFormController {
     estate.setState(state);
     estate.setLandlordId(landlordMap.get(landlord));
     estate.setDescription(description);
-  
+
+    // Save estate to the database
     try {
       estateService.insert(estate);
     } catch (DbException e) {
-        Alerts.showAlert(
-        "Erro ao salvar ", e.getMessage(), null, AlertType.ERROR
+      Alerts.showAlert(
+        "Erro ao salvar",
+        e.getMessage(),
+        null,
+        AlertType.ERROR
       );
+      return;
     }
 
+    // Refresh the data and close the window
     estateController.refreshTableData();
     estateController.setupPagination();
     closeWindow();

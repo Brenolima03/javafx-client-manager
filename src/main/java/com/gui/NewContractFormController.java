@@ -1,5 +1,6 @@
 package com.gui;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +17,7 @@ import com.services.ContractService;
 import com.services.EstateService;
 import com.utils.CpfCnpj;
 import com.utils.Currency;
+import com.utils.Date;
 import com.utils.Icons;
 
 import javafx.collections.FXCollections;
@@ -74,7 +76,7 @@ public class NewContractFormController {
   private TextField deposit;
 
   @FXML
-  private DatePicker contractSigningDate;
+  private DatePicker contractSigningDateField;
 
   @FXML
   private Button saveButton;
@@ -130,13 +132,14 @@ public class NewContractFormController {
     applyDoubleFormatter(energyBill);
     applyDoubleFormatter(waterBill);
     applyDoubleFormatter(deposit);
-  }
 
-  private void applyDoubleFormatter(TextField textField) {
-    textField.setText("R$ ");
-    textField.setTextFormatter(Currency.allowOnlyDigitsAndSeparators());
-    // Set the caret position to the end of the initial text
-    textField.positionCaret(textField.getText().length());
+    rentBeginningField.setConverter(Date.getDateConverter());
+    rentEndField.setConverter(Date.getDateConverter());
+    contractSigningDateField.setConverter(Date.getDateConverter());
+
+    Date.applyDateMaskOnInputFields(rentBeginningField);
+    Date.applyDateMaskOnInputFields(rentEndField);
+    Date.applyDateMaskOnInputFields(contractSigningDateField);
   }
 
   private void initializeGuaranteeTypeComboBox() {
@@ -179,6 +182,13 @@ public class NewContractFormController {
     estateField.setPromptText("Imóvel");
   }
   
+  private void applyDoubleFormatter(TextField textField) {
+    textField.setText("R$ ");
+    textField.setTextFormatter(Currency.allowOnlyDigitsAndSeparators());
+    // Set the caret position to the end of the initial text
+    textField.positionCaret(textField.getText().length());
+  }
+
   private List<String> getEstates(List<Estate> estates) {
     List<String> filteredEstates = new ArrayList<>();
     for (Estate estate : estates) {
@@ -207,6 +217,75 @@ public class NewContractFormController {
     return filteredClients;
   }
 
+  private void populateContractData(
+    Contract contract, Integer tenantId, Integer landlordId, Integer estateId,
+    LocalDate rentBeginning, LocalDate rentEnd, LocalDate contractSigningDate
+  ) {
+    contract.setTenant(tenantId);
+    contract.setLandlord(landlordId);
+    contract.setEstate(estateId);
+    contract.setRentBeginning(rentBeginning);
+    contract.setRentEnd(rentEnd);
+    contract.setRentValue(Currency.parseMonetaryValue(rentValue.getText()));
+    contract.setEnergyBill(Currency.parseMonetaryValue(energyBill.getText()));
+    contract.setWaterBill(Currency.parseMonetaryValue(waterBill.getText()));
+    contract.setDepositValue(Currency.parseMonetaryValue(deposit.getText()));
+    contract.setContractSigningDate(contractSigningDate);
+  }
+
+  private String validateInputs(
+    Integer tenantId, Integer landlordId, Integer estateId,
+    LocalDate rentBeginning, LocalDate rentEnd, LocalDate contractSigningDate,
+    String guaranteeType, TextField deposit, TextField guarantorName
+  ) {
+    // Validate tenant, landlord, and estate
+    if (tenantField.getValue() == null || tenantId == null)
+      return "Locatário";
+    if (landlordField.getValue() == null || landlordId == null)
+      return "Locador";
+    if (estateField.getValue() == null || estateId == null)
+      return "Imóvel";
+
+    // Validate monetary fields
+    if (rentValue.getText().replace("R$", "").trim().isEmpty())
+      return "Valor do aluguel";
+    if (energyBill.getText().replace("R$", "").trim().isEmpty())
+      return "Valor da conta de energia";
+    if (waterBill.getText().replace("R$", "").trim().isEmpty())
+      return "Valor da conta de água";
+
+    // Validate dates
+    if (!Date.isValidDate(rentBeginning))
+      return "Insira uma data válida para o início do contrato";
+    if (!Date.isValidDate(rentEnd))
+      return "Insira uma data válida para o término do contrato";
+    if (!Date.isValidDate(contractSigningDate))
+      return "Insira uma data válida para a assinatura";
+    if (!rentEnd.isAfter(rentBeginning))
+      return "Data de término deve ser posterior à data de início";
+
+    // Validate guarantee
+    if (guaranteeType == null || guaranteeType.trim().isEmpty())
+      return "Selecione um tipo de garantia";
+
+    if (guaranteeType.equals("Caução")) {
+      String depositText = deposit.getText().replace("R$", "").trim();
+      if (depositText.isEmpty() || Double.parseDouble(depositText) == 0.0)
+        return "Valor da caução não pode ser R$ 0";
+    }
+
+    if (guaranteeType.equals("Fiador")) {
+      if (guarantorName == null || guarantorName.getText().trim().isEmpty())
+        return "Nome do fiador não pode ser vazio";
+    }
+
+    return null;
+  }
+
+  private void closeWindow() {
+    stage.close();
+  }
+
   private void handleSave() {
     if (contract == null) contract = new Contract();
     if (guarantee == null) guarantee = new Guarantee();
@@ -214,48 +293,44 @@ public class NewContractFormController {
     Integer tenantId = tenantMap.get(tenantField.getValue());
     Integer landlordId = landlordMap.get(landlordField.getValue());
     Integer estateId = estateMap.get(estateField.getValue());
+    LocalDate rentBeginning = rentBeginningField.getValue();
+    LocalDate rentEnd = rentEndField.getValue();
+    LocalDate contractSigningDate = contractSigningDateField.getValue();
 
-    if (tenantId == null || landlordId == null || estateId == null) return;
+    String validationError = validateInputs(
+      tenantId, landlordId, estateId, rentBeginning,
+      rentEnd, contractSigningDate, guaranteeType.getValue(),
+      deposit, guarantorName
+    );
 
-    contract.setTenant(tenantId);
-    contract.setLandlord(landlordId);
-    contract.setEstate(estateId);
-    contract.setRentBeginning(rentBeginningField.getValue());
-    contract.setRentEnd(rentEndField.getValue());
+    if (validationError != null) {
+      Alerts.showAlert("Erro de Validação", validationError, null, AlertType.WARNING);
+      return;
+    }
 
-    // Clean and parse the values for the monetary fields
-    contract.setRentValue(Currency.parseMonetaryValue(rentValue.getText()));
-    contract.setEnergyBill(Currency.parseMonetaryValue(energyBill.getText()));
-    contract.setWaterBill(Currency.parseMonetaryValue(waterBill.getText()));
-    contract.setDepositValue(Currency.parseMonetaryValue(deposit.getText()));
-
-    contract.setContractSigningDate(contractSigningDate.getValue());
+    populateContractData(
+      contract, tenantId, landlordId, estateId,
+      rentBeginning, rentEnd, contractSigningDate
+    );
 
     String selectedGuaranteeType = guaranteeType.getValue();
-    Guarantee.GuaranteeType guaranteeTypeEnum = 
+    Guarantee.GuaranteeType guaranteeTypeEnum =
       guaranteeTypeMap.get(selectedGuaranteeType);
-
-    if (guaranteeTypeEnum == null) return;
-
     guarantee.setGuaranteeType(guaranteeTypeEnum);
     guarantee.setGuarantorNames(
-      List.of(guarantorName.getText(), partnerName.getText()));
+      List.of(guarantorName.getText(), partnerName.getText())
+    );
     contract.setGuarantee(guarantee);
 
     try {
       contractService.insert(contract);
     } catch (DbException e) {
-      Alerts.showAlert(
-      "Erro ao salvar ", e.getMessage(), null, AlertType.ERROR
-      );
+      Alerts.showAlert("Erro ao salvar", e.getMessage(), null, AlertType.ERROR);
+      return;
     }
 
     contractController.refreshTableData();
     contractController.setupPagination();
     closeWindow();
-  }
-
-  private void closeWindow() {
-    stage.close();
   }
 }

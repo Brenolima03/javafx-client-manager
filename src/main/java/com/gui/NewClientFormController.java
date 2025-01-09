@@ -8,6 +8,7 @@ import com.model.entities.Client.ClientType;
 import com.model.entities.Client.MaritalStatus;
 import com.services.ClientService;
 import com.utils.CpfCnpj;
+import com.utils.Date;
 import com.utils.Icons;
 import com.utils.States;
 import com.utils.TelephoneMask;
@@ -123,7 +124,6 @@ public class NewClientFormController {
     cpfRadioButton.setToggleGroup(cpfCnpjToggleGroup);
     cnpjRadioButton.setToggleGroup(cpfCnpjToggleGroup);
 
-
     cpfRadioButton.setOnAction(
       event -> CpfCnpj.updateCpfCnpjMask(cpfRadioButton, cpfCnpjField)
     );
@@ -134,8 +134,13 @@ public class NewClientFormController {
     CpfCnpj.applyCpfCnpjMaskOnInputFields(
       cpfCnpjField, cpfRadioButton, cnpjRadioButton
     );
-
+    
     States.populateStateCombobox(stateCombobox);
+
+    stateCombobox.setValue("MS");
+
+    birthDateField.setConverter(Date.getDateConverter());
+    Date.applyDateMaskOnInputFields(birthDateField);
 
     // Restrict zipField input to digits only and limit to 8 characters
     zipField.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -153,46 +158,84 @@ public class NewClientFormController {
   }
 
   private void handleSave() {
-    String name = nameField.getText();
-    String cpfCnpj = cpfCnpjField.getText().replaceAll("\\D", "");
-    String rg = rgField.getText().replaceAll("\\D", "");
-    String issuingOrganization = issuingOrganizationField.getText();
+    String name = nameField.getText().replaceAll("\\d", "");
+    String cpfCnpj = cpfCnpjField.getText();
+    String rg = rgField.getText();
+    String issuingOrganization =
+      issuingOrganizationField.getText().replaceAll("\\d", "");
     String telephone = telephoneField.getText().replaceAll("\\D", "");
     LocalDate birthDate = birthDateField.getValue();
     String selectedType = typeComboBox.getValue();
-    String nationality = nationalityField.getText();
-    String profession = professionField.getText();
+    String nationality = nationalityField.getText().replaceAll("\\d", "");
+    String profession = professionField.getText().replaceAll("\\d", "");
     String address = addressField.getText();
-    String neighborhood = neighborhoodField.getText();
-    String city = cityField.getText();
+    String neighborhood = neighborhoodField.getText().replaceAll("\\d", "");
+    String city = cityField.getText().replaceAll("\\d", "");
     String state = stateCombobox.getValue();
     String zip = zipField.getText();
+    String invalidField = null;
 
-    if (
-      name == null || name.trim().isEmpty() ||
-      cpfCnpj == null || cpfCnpj.trim().isEmpty() ||
-      telephone == null || telephone.trim().isEmpty() ||
-      birthDate == null
-    ) return;
+    if (name == null || name.trim().isEmpty()) {
+      invalidField = "Nome";
+    } else if (rg == null || rg.trim().isEmpty()) {
+      invalidField = "RG";
+    } else if (
+      issuingOrganization == null || issuingOrganization.trim().isEmpty()
+    ) {
+      invalidField = "Órgão expedidor";
+    } else if (cpfCnpj == null || cpfCnpj.trim().isEmpty() ||
+      (cpfRadioButton.isSelected() && !CpfCnpj.isCpf(cpfCnpj)) ||
+      (cnpjRadioButton.isSelected() && !CpfCnpj.isCnpj(cpfCnpj))) {
+      invalidField = "CPF/CNPJ";
+    } else if (telephone == null || telephone.trim().isEmpty()) {
+      invalidField = "Telefone";
+    } else if (!Date.isValidDate(birthDate)) {
+      Alerts.showAlert(
+        "Data inválida", "Insira uma data válida", null, AlertType.WARNING
+      );
+      return;
+    } else if (nationality == null || nationality.trim().isEmpty()) {
+      invalidField = "Nacionalidade";
+    } else if (profession == null || profession.trim().isEmpty()) {
+      invalidField = "Profissão";
+    } else if (address == null || address.trim().isEmpty()) {
+      invalidField = "Endereço";
+    } else if (neighborhood == null || neighborhood.trim().isEmpty()) {
+      invalidField = "Bairro";
+    } else if (city == null || city.trim().isEmpty()) {
+      invalidField = "Cidade";
+    } else if (state == null || state.trim().isEmpty()) {
+      invalidField = "Estado";
+    } else if (zip == null || zip.trim().isEmpty()) {
+      invalidField = "CEP";
+    }
+
+    if (invalidField != null) {
+      Alerts.showAlert(
+        "Campo inválido", "Corrija o campo '" + invalidField + "'",
+        null, AlertType.WARNING
+      );
+      return;
+    }
 
     ClientType clientType =
       "Locador".equals(selectedType) ? ClientType.LANDLORD : ClientType.TENANT;
 
+    // Marital status mapping using switch
     String selectedMaritalStatus = maritalStatusComboBox.getValue();
-
     MaritalStatus maritalStatus = switch (selectedMaritalStatus) {
       case "solteiro(a)" -> MaritalStatus.SINGLE;
       case "casado(a)" -> MaritalStatus.MARRIED;
       case "divorciado(a)" -> MaritalStatus.DIVORCED;
       case "viúvo(a)" -> MaritalStatus.WIDOWED;
       default -> throw new IllegalArgumentException(
-        "Unknown marital status: " + selectedMaritalStatus
+        "Estado civil desconhecido: " + selectedMaritalStatus
       );
     };
 
     if (client == null) client = new Client();
-    if (!CpfCnpj.isValid(cpfCnpj)) return;
 
+    // Setting values to the client object
     client.setName(name);
     client.setCpfCnpj(cpfCnpj);
     client.setRg(rg);
@@ -213,13 +256,11 @@ public class NewClientFormController {
       clientService.insert(client);
       closeWindow();
     } catch (DbException e) {
-      Alerts.showAlert(
-      "Erro ao salvar ", e.getMessage(), null, AlertType.ERROR
-      );
+      Alerts.showAlert("Erro ao salvar ", e.getMessage(), null, AlertType.ERROR);
     }
     clientListController.refreshTableData();
     clientListController.setupPagination();
-  }
+  }  
 
   private void closeWindow() {
     stage.close();
