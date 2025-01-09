@@ -34,7 +34,7 @@ public class DB {
           `CITY` VARCHAR(255) DEFAULT NULL,
           `STATE` ENUM('AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT',
           'MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP',
-          'SE','TO') NOT NULL,
+          'SE','TO') NULL,
           `ZIP` VARCHAR(8) DEFAULT NULL,
           PRIMARY KEY (`ID`)
         ) ENGINE=INNODB DEFAULT CHARSET=UTF8MB4 COLLATE=UTF8MB4_0900_AI_CI;
