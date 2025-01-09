@@ -1,26 +1,9 @@
 package com.utils;
 
-import com.gui.Alerts;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 
 public class CpfCnpj {
-  public static boolean isValid(String value) {
-    if (value == null || value.isEmpty()) return false;
-
-    if (!isCpf(value) && !isCnpj(value)) {
-      Alerts.showAlert(
-        "CPF ou CNPJ inválido",
-        null,
-        "Insira um CPF ou CNPJ válido.",
-        AlertType.ERROR
-      );
-      return false;
-    }
-    return true;
-  }
-
   public static String applyCpfCnpjMaskFromDatabase(String cpfCnpj) {
     if (cpfCnpj == null || cpfCnpj.isEmpty()) return "";
 
@@ -62,40 +45,34 @@ public class CpfCnpj {
         for (int i = 0; i < filteredText.length(); i++) {
           char digit = filteredText.charAt(i);
           switch (i) {
-            case 3:
-            case 6:
+            case 3, 6 -> {
               formattedText.append(".");
               formattedText.append(digit);
-              break;
-            case 9:
+            }
+            case 9 -> {
               formattedText.append("-");
               formattedText.append(digit);
-              break;
-            default:
-              formattedText.append(digit);
-              break;
+            }
+            default -> formattedText.append(digit);
           }
         }
       else
         for (int i = 0; i < filteredText.length(); i++) {
           char digit = filteredText.charAt(i);
           switch (i) {
-            case 2:
-            case 5:
+            case 2, 5 -> {
               formattedText.append(".");
               formattedText.append(digit);
-              break;
-            case 8:
+            }
+            case 8 -> {
               formattedText.append("/");
               formattedText.append(digit);
-              break;
-            case 12:
+            }
+            case 12 -> {
               formattedText.append("-");
               formattedText.append(digit);
-              break;
-            default:
-              formattedText.append(digit);
-              break;
+            }
+            default -> formattedText.append(digit);
           }
         }
       FormFieldFormatter.updateFormattedField(
