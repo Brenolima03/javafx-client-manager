@@ -488,7 +488,7 @@ public class ContractListController {
       newContractStage.setResizable(false);
     } catch (IOException e) {
       Alerts.showAlert(
-        "Error", "Unable to load the form",
+        "Erro", "Falha ao abrir o formulário. Entre em contato com o suporte.",
         e.getMessage(), AlertType.ERROR
       );
     }
