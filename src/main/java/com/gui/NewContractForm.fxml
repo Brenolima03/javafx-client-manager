@@ -36,41 +36,41 @@
       GridPane.rowIndex="2"/>
 
     <!-- Second Row -->
-    <Label text="Início da locação" GridPane.columnIndex="0"
+    <Label text="Valor do aluguel" GridPane.columnIndex="0"
       GridPane.rowIndex="3"/>
+    <TextField fx:id="rentValue" promptText="1000" prefWidth="300"
+      GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+    <Label text="Caução" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+    <TextField fx:id="deposit" promptText="Valor da caução" prefWidth="300"
+      GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+
+    <Label text="Conta de energia" GridPane.columnIndex="0"
+      GridPane.rowIndex="5"/>
+    <TextField fx:id="energyBill" promptText="100" prefWidth="300"
+      GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+
+    <!-- Third Row -->
+    <Label text="Conta de água" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+    <TextField fx:id="waterBill" promptText="100" prefWidth="300"
+      GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+
+    <!-- Fourth Row -->
+    <Label text="Início da locação" GridPane.columnIndex="0"
+      GridPane.rowIndex="7"/>
     <DatePicker fx:id="rentBeginningField" promptText="01/01/2025"
-      prefWidth="300" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+      prefWidth="300" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
 
     <Label text="Fim da locação" GridPane.columnIndex="0"
-      GridPane.rowIndex="4"/>
+      GridPane.rowIndex="8"/>
     <DatePicker fx:id="rentEndField" promptText="01/01/2026" prefWidth="300"
-      GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+      GridPane.columnIndex="1" GridPane.rowIndex="8"/>
 
     <!-- Data de assinatura do contrato -->
     <Label text="Data de assinatura do contrato" GridPane.columnIndex="0"
-      GridPane.rowIndex="5"/>
-    <DatePicker fx:id="contractSigningDate" promptText="01/01/2025"
-      prefWidth="300" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
-
-    <!-- Third Row -->
-    <Label text="Valor do aluguel" GridPane.columnIndex="0"
-      GridPane.rowIndex="6"/>
-    <TextField fx:id="rentValue" promptText="1000" prefWidth="300"
-      GridPane.columnIndex="1" GridPane.rowIndex="6"/>
-
-    <Label text="Caução" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
-    <TextField fx:id="deposit" promptText="Valor da caução" prefWidth="300"
-      GridPane.columnIndex="1" GridPane.rowIndex="7"/>
-
-    <Label text="Conta de energia" GridPane.columnIndex="0"
-      GridPane.rowIndex="8"/>
-    <TextField fx:id="energyBill" promptText="100" prefWidth="300"
-      GridPane.columnIndex="1" GridPane.rowIndex="8"/>
-
-    <!-- Fourth Row -->
-    <Label text="Conta de água" GridPane.columnIndex="0" GridPane.rowIndex="9"/>
-    <TextField fx:id="waterBill" promptText="100" prefWidth="300"
-      GridPane.columnIndex="1" GridPane.rowIndex="9"/>
+      GridPane.rowIndex="9"/>
+    <DatePicker fx:id="contractSigningDateField" promptText="01/01/2025"
+      prefWidth="300" GridPane.columnIndex="1" GridPane.rowIndex="9"/>
 
     <!-- Fifth Row -->
     <Label text="Tipo de garantia" GridPane.columnIndex="0"
