@@ -89,7 +89,7 @@
 
     <!-- Fifth Row -->
     <Label text="Estado" GridPane.columnIndex="0" GridPane.rowIndex="14"/>
-    <ComboBox fx:id="stateCombobox" promptText="Estado" prefWidth="250"
+    <ComboBox fx:id="stateCombobox" prefWidth="250"
       GridPane.columnIndex="1" GridPane.rowIndex="14"/>
 
     <Label text="CEP" GridPane.columnIndex="0" GridPane.rowIndex="15"/>
