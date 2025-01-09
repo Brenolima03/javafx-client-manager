@@ -263,6 +263,7 @@ public class ContractDaoJDBC implements ContractDao {
     }
   }
 
+  @Override
   public List<Contract> findPaginatedDao(int page, int pageSize) {
     try (PreparedStatement ps = conn.prepareStatement(
       "SELECT * FROM CONTRACTS LIMIT ? OFFSET ?"
