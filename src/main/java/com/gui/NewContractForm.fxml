@@ -45,15 +45,16 @@
     <TextField fx:id="deposit" promptText="Valor da caução" prefWidth="300"
       GridPane.columnIndex="1" GridPane.rowIndex="4"/>
 
-    <Label text="Conta de energia" GridPane.columnIndex="0"
+    <Label text="UC" GridPane.columnIndex="0"
       GridPane.rowIndex="5"/>
-    <TextField fx:id="energyBill" promptText="100" prefWidth="300"
+    <TextField fx:id="energyConsumerUnit" promptText="12345678" prefWidth="300"
       GridPane.columnIndex="1" GridPane.rowIndex="5"/>
 
     <!-- Third Row -->
-    <Label text="Conta de água" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
-    <TextField fx:id="waterBill" promptText="100" prefWidth="300"
-      GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+    <Label text="Matrícula Águas" GridPane.columnIndex="0"
+      GridPane.rowIndex="6"/>
+    <TextField fx:id="waterRegistrationNumber" promptText="12345678"
+      prefWidth="300" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
 
     <!-- Fourth Row -->
     <Label text="Início da locação" GridPane.columnIndex="0"

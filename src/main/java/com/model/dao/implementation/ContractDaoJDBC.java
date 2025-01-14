@@ -39,8 +39,8 @@ public class ContractDaoJDBC implements ContractDao {
         Date.valueOf(obj.getRentEnd()) : null;
       double rentValue = obj.getRentValue();
       double deposit = obj.getDepositValue();
-      double waterBill = obj.getWaterBill();
-      double energyBill = obj.getEnergyBill();
+      String energyConsumerUnit = obj.getEnergyConsumerUnit();
+      String waterRegistrationNumber = obj.getWaterRegistrationNumber();
       LocalDate signingDate = obj.getContractSigningDate();
       Guarantee guarantee = obj.getGuarantee();
       String guaranteeType = null;
@@ -61,8 +61,8 @@ public class ContractDaoJDBC implements ContractDao {
       String sql = """
         INSERT INTO CONTRACTS (
           TENANT_ID, LANDLORD_ID, ESTATE_ID, FILE_BASE64, RENT_BEGINNING,
-          RENT_END, RENT_VALUE, WATER_BILL, ENERGY_BILL, GUARANTOR_ID,
-          CONTRACT_SIGNING_DATE, DEPOSIT, GUARANTEE_TYPE
+          RENT_END, RENT_VALUE, ENERGY_CONSUMER_UNIT, WATER_REGISTRATION_NUMBER,
+          GUARANTOR_ID, CONTRACT_SIGNING_DATE, DEPOSIT, GUARANTEE_TYPE
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       """;
   
@@ -75,8 +75,8 @@ public class ContractDaoJDBC implements ContractDao {
       st.setDate(5, rentBeginning);
       st.setDate(6, rentEnd);
       st.setDouble(7, rentValue);
-      st.setDouble(8, waterBill);
-      st.setDouble(9, energyBill);
+      st.setString(8, energyConsumerUnit);
+      st.setString(9, waterRegistrationNumber);
       st.setInt(10, guarantorId);
       st.setDate(11, signingDate != null ? Date.valueOf(signingDate) : null);
       st.setDouble(12, deposit);
@@ -188,8 +188,10 @@ public class ContractDaoJDBC implements ContractDao {
         rs.getDate("CONTRACT_SIGNING_DATE").toLocalDate()
       );
       contract.setRentValue(rs.getDouble("RENT_VALUE"));
-      contract.setWaterBill(rs.getDouble("WATER_BILL"));
-      contract.setEnergyBill(rs.getDouble("ENERGY_BILL"));
+      contract.setEnergyConsumerUnit(rs.getString("ENERGY_CONSUMER_UNIT"));
+      contract.setWaterRegistrationNumber(
+        rs.getString("WATER_REGISTRATION_NUMBER")
+      );
 
       // Instantiate the Guarantee object
       Guarantee guarantee = new Guarantee();

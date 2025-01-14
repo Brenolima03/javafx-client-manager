@@ -14,8 +14,8 @@ public class Contract {
   private double depositValue;
   private Guarantee guarantee;
   private String fileBase64;
-  private double energyBill;
-  private double waterBill;
+  private String energyConsumerUnit;
+  private String waterRegistrationNumber;
   private LocalDate contractSigningDate;
 
   public Contract() {}
@@ -23,8 +23,8 @@ public class Contract {
   public Contract(
     int id, int tenant, int landlord, int estateId, LocalDate rentBeginning,
     LocalDate rentEnd, double rentValue, double depositValue,
-    Guarantee guarantee, String fileBase64, double energyBill, 
-    double waterBill, LocalDate contractSigningDate
+    Guarantee guarantee, String fileBase64, String energyConsumerUnit, 
+    String waterRegistrationNumber, LocalDate contractSigningDate
   ) {
     this.id = id;
     this.tenant = tenant;
@@ -36,8 +36,8 @@ public class Contract {
     this.depositValue = depositValue;
     this.guarantee = guarantee;
     this.fileBase64 = fileBase64;
-    this.energyBill = energyBill;
-    this.waterBill = waterBill;
+    this.energyConsumerUnit = energyConsumerUnit;
+    this.waterRegistrationNumber = waterRegistrationNumber;
     this.contractSigningDate = contractSigningDate;
   }
 
@@ -121,20 +121,20 @@ public class Contract {
     this.fileBase64 = fileBase64;
   }
 
-  public double getEnergyBill() {
-    return energyBill;
+  public String getEnergyConsumerUnit() {
+    return energyConsumerUnit;
   }
 
-  public void setEnergyBill(double energyBill) {
-    this.energyBill = energyBill;
+  public void setEnergyConsumerUnit(String energyConsumerUnit) {
+    this.energyConsumerUnit = energyConsumerUnit;
   }
 
-  public double getWaterBill() {
-    return waterBill;
+  public String getWaterRegistrationNumber() {
+    return waterRegistrationNumber;
   }
 
-  public void setWaterBill(double waterBill) {
-    this.waterBill = waterBill;
+  public void setWaterRegistrationNumber(String waterRegistrationNumber) {
+    this.waterRegistrationNumber = waterRegistrationNumber;
   }
 
   public LocalDate getContractSigningDate() {
@@ -159,7 +159,8 @@ public class Contract {
     return "Contract [id=" + id + ", tenant=" + tenant + ", landlord="
       + landlord + ", rentBeginning=" + rentBeginning + ", rentEnd=" + rentEnd 
       + ", rentValue=" + rentValue + ", guarantee=" + guarantee 
-      + ", energyBill=" + energyBill + ", waterBill=" + waterBill 
+      + ", energyConsumerUnit=" + energyConsumerUnit
+      + ", waterRegistrationNumber=" + waterRegistrationNumber 
       + ", contractSigningDate=" + contractSigningDate + "]";
   }
 }

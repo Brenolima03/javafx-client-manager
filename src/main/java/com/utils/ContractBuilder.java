@@ -95,12 +95,10 @@ public class ContractBuilder {
       Currency.getCurrencyConverter().toString(contract.getRentValue())
     );
     replacements.put(
-      "{ENERGY_BILL}",
-      Currency.getCurrencyConverter().toString(contract.getEnergyBill())
+      "{ENERGY_CONSUMER_UNIT}", contract.getEnergyConsumerUnit()
     );
     replacements.put(
-      "{WATER_BILL}",
-      Currency.getCurrencyConverter().toString(contract.getWaterBill())
+      "{WATER_REGISTRATION_NUMBER}", contract.getWaterRegistrationNumber()
     );
     replacements.put(
       "{CONTRACT_SIGNING_DATE}", 

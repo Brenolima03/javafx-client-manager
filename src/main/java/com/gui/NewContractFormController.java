@@ -67,10 +67,10 @@ public class NewContractFormController {
   private TextField rentValue;
 
   @FXML
-  private TextField energyBill;
+  private TextField energyConsumerUnit;
 
   @FXML
-  private TextField waterBill;
+  private TextField waterRegistrationNumber;
 
   @FXML
   private TextField deposit;
@@ -129,8 +129,6 @@ public class NewContractFormController {
 
     // Apply double formatter to all relevant fields
     applyDoubleFormatter(rentValue);
-    applyDoubleFormatter(energyBill);
-    applyDoubleFormatter(waterBill);
     applyDoubleFormatter(deposit);
 
     rentBeginningField.setConverter(Date.getDateConverter());
@@ -227,8 +225,8 @@ public class NewContractFormController {
     contract.setRentBeginning(rentBeginning);
     contract.setRentEnd(rentEnd);
     contract.setRentValue(Currency.parseMonetaryValue(rentValue.getText()));
-    contract.setEnergyBill(Currency.parseMonetaryValue(energyBill.getText()));
-    contract.setWaterBill(Currency.parseMonetaryValue(waterBill.getText()));
+    contract.setEnergyConsumerUnit(energyConsumerUnit.getText());
+    contract.setWaterRegistrationNumber(waterRegistrationNumber.getText());
     contract.setDepositValue(Currency.parseMonetaryValue(deposit.getText()));
     contract.setContractSigningDate(contractSigningDate);
   }
@@ -249,10 +247,10 @@ public class NewContractFormController {
     // Validate monetary fields
     if (rentValue.getText().replace("R$", "").trim().isEmpty())
       return "Valor do aluguel";
-    if (energyBill.getText().replace("R$", "").trim().isEmpty())
-      return "Valor da conta de energia";
-    if (waterBill.getText().replace("R$", "").trim().isEmpty())
-      return "Valor da conta de água";
+    if (energyConsumerUnit.getText().trim().isEmpty())
+      return "UC";
+    if (waterRegistrationNumber.getText().trim().isEmpty())
+      return "Matrícula Águas";
 
     // Validate dates
     if (!Date.isValidDate(rentBeginning))
