@@ -35,6 +35,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.Pagination;
 import javafx.scene.control.TableCell;
@@ -69,7 +70,19 @@ public class ContractListController {
   private ComboBox <String> filtersCombobox;
 
   @FXML
+  private DatePicker startDatePicker;
+
+  @FXML
+  private DatePicker endDatePicker;
+
+  @FXML
+  private Button applyDateButton;
+
+  @FXML
   private Button addContractButton;
+
+  @FXML
+  private Button downloadButton;
 
   @FXML
   private TableColumn <Contract, Integer> contractIdColumn;
@@ -162,6 +175,8 @@ public class ContractListController {
     EventHandler <ActionEvent> event, boolean isTransparent
   ) {
     Icons.setButtonIcon(button, path);
+    button.setPrefWidth(38);
+    button.setPrefHeight(38);
     button.setOnAction(event);
     if (isTransparent)
       button.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
@@ -209,6 +224,68 @@ public class ContractListController {
     } catch (DbException e) {
       Alerts.showAlert(
         "Erro ao buscar ", e.getMessage(), null, AlertType.ERROR
+      );
+    }
+  }
+
+  @FXML
+  private void filterByDate() {
+    if (startDatePicker.getValue() != null && endDatePicker.getValue() != null){
+      String startDate = startDatePicker.getValue().toString();
+      String endDate = endDatePicker.getValue().toString();
+
+      List<Contract> contracts =
+        contractService.getContractsByDate(startDate, endDate);
+
+      if (contracts != null && !contracts.isEmpty()) refreshTableData();
+      else contractTable.setItems(FXCollections.observableArrayList());
+    }
+  }  
+
+  @FXML
+  private void downloadContracts() {
+    boolean allContractsEmitted = true;
+    StringBuilder failedContractIds = new StringBuilder();
+
+    // Iterate over all contracts in the TableView
+    for (Contract contract : contractTable.getItems()) {
+      if (contract != null) {
+        int tenantId = contract.getTenant();
+        int landlordId = contract.getLandlord();
+        int estateId = contract.getEstate();
+
+        Client tenantObj = clientService.findClientById(tenantId);
+        Client landlordObj = clientService.findClientById(landlordId);
+        Estate estateObj = estateService.findState(estateId);
+
+        try {
+          // Emit the contract for each contract in the table
+          ContractBuilder.emitContract(
+            tenantObj, landlordObj, estateObj, contract
+          );
+        } catch (Exception e) {
+          // If emission fails, mark the operation as failed
+          // and store the contract ID
+          allContractsEmitted = false;
+          failedContractIds.append("Contrato ID: ")
+            .append(contract.getId()).append("\n");
+        }
+      }
+    }
+
+    // Show success alert only if all contracts were emitted successfully
+    if (allContractsEmitted) {
+      Alerts.showAlert(
+        "Sucesso", "Todos os contratos foram emitidos com sucesso!",
+        null, AlertType.INFORMATION
+      );
+    } else {
+      // Show error alert with the failed contract IDs
+      Alerts.showAlert(
+        "Erro",
+        "Falha ao emitir os seguintes contratos:\n" +
+        failedContractIds.toString(),
+        "Entre em contato com o suporte para mais informações.", AlertType.ERROR
       );
     }
   }
@@ -552,6 +629,11 @@ public class ContractListController {
       contractTable.setPlaceholder(new Label("Não há contratos registrados"));
 
       setupFilterCombobox();
+
+      setupButton(
+        downloadButton, "src/main/java/com/icons/download.png",
+        event -> downloadContracts(), false
+      );
       setupButton(
         searchButton, "src/main/java/com/icons/search-icon.png",
         event -> searchContracts(), false

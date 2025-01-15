@@ -190,6 +190,8 @@ public class EstateListController {
     EventHandler <ActionEvent> event, boolean isTransparent
   ) {
     Icons.setButtonIcon(button, path);
+    button.setPrefWidth(38);
+    button.setPrefHeight(38);
     button.setOnAction(event);
     if (isTransparent)
       button.setStyle("-fx-background-color: transparent; -fx-padding: 0;");

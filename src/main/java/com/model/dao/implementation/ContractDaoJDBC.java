@@ -242,6 +242,33 @@ public class ContractDaoJDBC implements ContractDao {
   }
 
   @Override
+  public List<Contract> getContractsByDateDao(String startDate, String endDate) {
+    PreparedStatement st = null;
+    ResultSet rs = null;
+    try {
+      String sql = "SELECT * FROM CONTRACTS WHERE RENT_BEGINNING BETWEEN ? AND ?";
+  
+      st = conn.prepareStatement(sql);
+      st.setString(1, startDate);
+      st.setString(2, endDate);
+      rs = st.executeQuery();
+  
+      List<Contract> list = new ArrayList<>();
+  
+      while (rs.next()) {
+        list.add(instantiateContractDao(rs));
+      }
+  
+      return list.isEmpty() ? null : list;
+    } catch (SQLException e) {
+      throw new DbException("Erro ao buscar os contratos: " + e.getMessage());
+    } finally {
+      DB.closeStatement(st);
+      DB.closeResultSet(rs);
+    }
+  }
+
+  @Override
   public List<Contract> searchDao(String filter, String argument) {
     PreparedStatement st = null;
     ResultSet rs = null;

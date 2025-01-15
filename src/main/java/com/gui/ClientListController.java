@@ -427,10 +427,12 @@ public class ClientListController extends Main {
   }
 
   private void setupButton(
-    Button button, String path, EventHandler <ActionEvent> event,
-    boolean isTransparent
+    Button button, String path,
+    EventHandler <ActionEvent> event, boolean isTransparent
   ) {
     Icons.setButtonIcon(button, path);
+    button.setPrefWidth(38);
+    button.setPrefHeight(38);
     button.setOnAction(event);
     if (isTransparent)
       button.setStyle("-fx-background-color: transparent; -fx-padding: 0;");

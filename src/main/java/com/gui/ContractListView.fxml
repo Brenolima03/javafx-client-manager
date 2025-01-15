@@ -14,6 +14,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.control.DatePicker?>
 
 <VBox
   xmlns:fx="http://javafx.com/fxml/1"
@@ -35,6 +36,21 @@
           <Button fx:id="searchButton" />
           <Label fx:id="message" />
         </HBox>
+
+        <HBox spacing="10">
+          <!-- Start Date -->
+          <DatePicker fx:id="startDatePicker" promptText="Data Início"/>
+          <!-- End Date -->
+          <DatePicker fx:id="endDatePicker" promptText="Data Término"/>
+        </HBox>
+        
+        <Button fx:id="applyDateButton" text="Aplicar"
+          onAction="#filterByDate"/>
+
+        <HBox>
+          <Button fx:id="downloadButton" onAction="#downloadContracts"/>
+        </HBox>
+
         <!-- Spacer (Empty HBox with Hgrow set to ALWAYS) -->
         <HBox HBox.hgrow="ALWAYS"/>
         <!-- Right part of the container with the addClientButton -->

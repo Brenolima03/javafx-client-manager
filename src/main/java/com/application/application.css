@@ -215,7 +215,8 @@ VBox > Label,
 /* ======================== Buttons ======================== */
 #saveButton, 
 #cancelButton,
-#emitReportButton {
+#emitReportButton,
+#applyDateButton {
   -fx-font-size: 14px;
   -fx-padding: 10px 20px;
   -fx-background-color: #4CAF50;
@@ -225,8 +226,12 @@ VBox > Label,
   -fx-pref-width: 120px;
 }
 
+#applyDateButton {
+  -fx-padding: 5px 20px;
+}
 #saveButton:hover,
-#emitReportButton:hover {
+#emitReportButton:hover,
+#applyDateButton:hover {
   -fx-background-color: #45a049;
 }
 

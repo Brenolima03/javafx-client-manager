@@ -39,4 +39,8 @@ public class ContractService {
       throw e;
     }
   }
+
+  public List<Contract> getContractsByDate(String startDate, String endDate) {
+    return dao.getContractsByDateDao(startDate, endDate);
+  }
 }
