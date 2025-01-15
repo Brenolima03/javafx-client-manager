@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<VBox
+  fx:id="commissionReport"
+  xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/21" 
+  alignment="TOP_CENTER" fx:controller="com.gui.CommissionReportController"
+  stylesheets="@../application/application.css" spacing="8"
+  style="-fx-padding: 0;">
+
+  <TableView fx:id="commissionTable" editable="true">
+    <columns>
+      <TableColumn fx:id="landlordColumn" text="Locador"/>
+      <TableColumn fx:id="commissionValueColumn" text="Comissão"/>
+    </columns>
+  </TableView>
+
+  <Button fx:id="emitReportButton" text="Baixar"
+    onAction="#handleGenerateExcelReport" />
+</VBox>

@@ -11,6 +11,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.MenuItem;
 import javafx.stage.Stage;
 
@@ -24,15 +25,18 @@ public class ViewController {
   @FXML
   private MenuItem estateList;
 
-  public void setStage(Stage stage) {}
+  @FXML
+  private MenuItem commissionReport;
+
+  public void setStage(Stage stage) {
+  }
 
   public void openClientList(ActionEvent event) {
     try {
       ClientService clientService = new ClientService();
 
       FXMLLoader loader = new FXMLLoader(
-        getClass().getResource("ClientListView.fxml")
-      );
+          getClass().getResource("ClientListView.fxml"));
 
       loader.setControllerFactory(controllerClass -> {
         if (controllerClass == ClientListController.class) {
@@ -84,8 +88,7 @@ public class ViewController {
 
       Parent root = loader.load();
 
-      Stage currentStage = (Stage)
-        estateList.getParentPopup().getOwnerWindow();
+      Stage currentStage = (Stage) estateList.getParentPopup().getOwnerWindow();
       Scene newScene = new Scene(root);
       currentStage.setScene(newScene);
       currentStage.setTitle("Imóveis");
@@ -130,6 +133,51 @@ public class ViewController {
       currentStage.show();
     } catch (IOException e) {
       System.err.println(e.getMessage());
+    }
+  }
+
+  public void openComissionReport() {
+    ClientService clientService = new ClientService();
+    try {
+      FXMLLoader loader = new FXMLLoader(
+        getClass().getResource("/com/gui/CommissionReportView.fxml")
+      );
+
+      loader.setControllerFactory(controllerClass -> {
+        if (controllerClass == CommissionReportController.class) {
+          CommissionReportController controller =
+            new CommissionReportController();
+          controller.setContractService(new ContractService());
+          controller.setClientService(clientService);
+          return controller;
+        }
+        try {
+          return controllerClass.getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+          System.err.println(e.getMessage());
+        }
+        return null;
+      });
+
+      Parent root = loader.load();
+
+      CommissionReportController controller = loader.getController();
+      Stage commissionReportStage = new Stage();
+      controller.setStage(commissionReportStage);
+
+      commissionReportStage.setTitle("Relatório de Comissões");
+      commissionReportStage.setScene(new Scene(root));
+      commissionReportStage.setWidth(440);
+      commissionReportStage.setHeight(560);
+
+      commissionReportStage.show();
+      commissionReportStage.setResizable(false);
+    } catch (IOException e) {
+      System.err.println(e.getMessage());
+      Alerts.showAlert(
+        "Erro", "Falha ao abrir o relatório de comissões. " +
+        "Entre em contato com o suporte.", e.getMessage(), AlertType.ERROR
+      );
     }
   }
 }

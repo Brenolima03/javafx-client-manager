@@ -19,5 +19,9 @@
     <Menu text="Contratos">
       <MenuItem text="Ver" fx:id="contractList" onAction="#openContractList"/>
     </Menu>
+    <Menu text="Comissões">
+      <MenuItem text="Ver" fx:id="commissionReport"
+      onAction="#openComissionReport"/>
+    </Menu>
   </MenuBar>
 </AnchorPane>
