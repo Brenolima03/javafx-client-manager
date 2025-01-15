@@ -17,6 +17,10 @@ public class ContractService {
 	  dao.insertDao(obj);
   }
 
+  public List<Contract> getAllContracts() {
+    return dao.getAllContractsDao();
+  }
+
   public List<Contract> search(String filter, String argument) {
     return dao.searchDao(filter, argument);
   }
