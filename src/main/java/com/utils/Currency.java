@@ -9,8 +9,14 @@ public class Currency {
     return new StringConverter <Double> () {
       @Override
       public String toString(Double value) {
-        if (value == null) return "R$ 0,00"; // Default when value is null
-        return String.format("R$ %.2f", value); // Format as currency
+        if (value == null) return "R$ 0"; // Default when value is null
+
+        if (value == Math.floor(value))
+          // No decimal places for round numbers
+          return "R$ " + String.format("%.0f", value);
+
+        // Otherwise, format with two decimal places
+        return String.format("R$ %.2f", value);
       }
 
       @Override
@@ -24,7 +30,6 @@ public class Currency {
           return 0.0; // Return 0.0 if the input is not valid
         }
       }
-      
     };
   }
 
