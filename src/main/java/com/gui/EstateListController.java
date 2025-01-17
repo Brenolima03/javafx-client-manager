@@ -351,11 +351,11 @@ public class EstateListController {
       setupFilterCombobox();
 
       setupButton(
-        searchButton, "src/main/java/com/icons/search-icon.png",
+        searchButton, "icons/search-icon.png",
         event -> searchEstates(), false
       );
       setupButton(
-        addEstateButton, "src/main/java/com/icons/add-icon.png",
+        addEstateButton, "icons/add-icon.png",
         event -> openNewEstateForm(), false
       );
       setupPagination();

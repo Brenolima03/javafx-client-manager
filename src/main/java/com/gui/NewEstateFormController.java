@@ -60,7 +60,7 @@ public class NewEstateFormController {
 
   public void setStage(Stage stage) {
     this.stage = stage;
-    Icons.setIcon(stage, "src/main/java/com/icons/favicon.png");
+    Icons.setIcon(stage, "icons/favicon.png");
   }
 
   public void setEstateService(EstateService estateService) {

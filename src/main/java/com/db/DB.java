@@ -196,13 +196,12 @@ public class DB {
   }
 
   private static Properties loadProperties() {
-    try (FileInputStream fs = new FileInputStream(
-      "src/main/java/com/db.properties")
-    ) {
+    try (FileInputStream fs = new FileInputStream("db.properties")) {
       Properties props = new Properties();
       props.load(fs);
       return props;
-    } catch (IOException e) {
+    }
+    catch (IOException e) {
       throw new DbException(e.getMessage());
     }
   }

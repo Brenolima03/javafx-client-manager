@@ -344,11 +344,11 @@ public class ClientListController extends Main {
       private final Button deleteButton = new Button();
       private final HBox actionBox = new HBox(19, editButton, deleteButton);
       {
-        setupButton(editButton, "src/main/java/com/icons/update-icon.png",
+        setupButton(editButton, "icons/update-icon.png",
           event -> handleEdit(event), true
         );
 
-        setupButton(deleteButton, "src/main/java/com/icons/delete-icon.png",
+        setupButton(deleteButton, "icons/delete-icon.png",
           event -> handleDelete(event), true
         );
 
@@ -625,11 +625,11 @@ public class ClientListController extends Main {
       clientTable.setPlaceholder(new Label("Não há clientes registrados"));
       setupFilterCombobox();
       setupButton(
-        searchButton, "src/main/java/com/icons/search-icon.png",
+        searchButton, "icons/search-icon.png",
         event -> searchClients(), false
       );
       setupButton(
-        addClientButton, "src/main/java/com/icons/add-icon.png",
+        addClientButton, "icons/add-icon.png",
         event -> openNewClientForm(), false
       );
       setupPagination();

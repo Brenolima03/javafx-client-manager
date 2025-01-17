@@ -21,7 +21,7 @@ public class ContractBuilder {
     Client tenant, Client landlord, Estate estate, Contract contract
   ) {
     try {
-      String fileName = "src\\main\\java\\com\\ContractModel.docx";
+      String fileName = "ContractModel.docx";
 
       // Read the .docx file
       try (XWPFDocument doc =
@@ -32,9 +32,8 @@ public class ContractBuilder {
           replacePlaceholders(paragraph, tenant, landlord, estate, contract);
 
         // Save the modified document to a new file
-        String outputFileName = String.format(
-          "src\\main\\java\\com\\Contrato %d.docx", contract.getId()
-        );
+        String outputFileName =
+          String.format("Contrato %d.docx", contract.getId());
         try (FileOutputStream out = new FileOutputStream(outputFileName)) {
           doc.write(out);
         }

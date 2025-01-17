@@ -578,7 +578,7 @@ public class ContractListController {
 
       {
         setupButton(
-          downloadButton, "src/main/java/com/icons/download.png", event -> {
+          downloadButton, "icons/download.png", event -> {
             Contract contract = getTableRow().getItem();
             if (contract != null) {
               int tenantId = contract.getTenant();
@@ -631,15 +631,15 @@ public class ContractListController {
       setupFilterCombobox();
 
       setupButton(
-        downloadButton, "src/main/java/com/icons/download.png",
+        downloadButton, "icons/download.png",
         event -> downloadContracts(), false
       );
       setupButton(
-        searchButton, "src/main/java/com/icons/search-icon.png",
+        searchButton, "icons/search-icon.png",
         event -> searchContracts(), false
       );
       setupButton(
-        addContractButton, "src/main/java/com/icons/add-icon.png",
+        addContractButton, "icons/add-icon.png",
         event -> openNewContractForm(), false
       );
       setupPagination();

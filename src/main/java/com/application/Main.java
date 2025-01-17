@@ -19,7 +19,7 @@ public class Main extends Application {
     try {
       FXMLLoader loader =
         new FXMLLoader(getClass().getResource("/com/gui/View.fxml"));
-      Icons.setIcon(primaryStage, "src/main/java/com/icons/favicon.png");
+      Icons.setIcon(primaryStage, "icons/favicon.png");
       Parent root = loader.load();
 
       ViewController controller = loader.getController();

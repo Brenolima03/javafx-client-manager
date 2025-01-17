@@ -15,6 +15,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.stage.Stage;
@@ -35,7 +36,7 @@ public class CommissionReportController {
 
   public void setStage(Stage stage) {
     this.stage = stage;
-    Icons.setIcon(stage, "src/main/java/com/icons/favicon.png");
+    Icons.setIcon(stage, "icons/favicon.png");
   }
 
   public void setClientService(ClientService clientService) {
@@ -53,6 +54,8 @@ public class CommissionReportController {
           "ContractService was not initialized. Call setContractService() " +
           "before loading the controller."
         );
+
+      commissionTable.setPlaceholder(new Label("Não há comissões"));
       commissionTable.setPrefHeight(460);
 
       landlordColumn.setCellValueFactory(
@@ -78,6 +81,9 @@ public class CommissionReportController {
   private void loadRentAndCommission() {
     try {
       var contracts = contractService.getAllContracts();
+      if (contracts == null)
+        return;
+
       double totalCommission = 0.0;
       HashMap<String, String> map = new HashMap<>();
 
@@ -92,24 +98,18 @@ public class CommissionReportController {
           landlordName, Currency.getCurrencyConverter().toString(commission)
         );
       }
+
       map.put(
         "Total", Currency.getCurrencyConverter().toString(totalCommission)
       );
+  
       // Convert the map entries to an observable list
       ObservableList<Map.Entry<String, String>> data =
         FXCollections.observableArrayList(map.entrySet());
 
-      // Set the data to the TableView
       commissionTable.setItems(data);
-
     } catch (Exception e) {
       System.err.println(e.getMessage());
-      Alerts.showAlert(
-        "Erro ao carregar dados",
-        "Não foi possível carregar a lista de aluguéis e comissões.",
-        e.getMessage(),
-        AlertType.ERROR
-      );
     }
   }
 

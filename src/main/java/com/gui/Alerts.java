@@ -11,7 +11,7 @@ import javafx.stage.Stage;
 
 public class Alerts {
   private static void setAlertIcon(Alert alert) {
-    String imagePath = "src/main/java/com/icons/favicon.png";
+    String imagePath = "icons/favicon.png";
     Icons.setIcon(
       (Stage) alert.getDialogPane().getScene().getWindow(), imagePath
     );
