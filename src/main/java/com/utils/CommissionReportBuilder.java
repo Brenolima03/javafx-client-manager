@@ -41,7 +41,10 @@ public class CommissionReportBuilder {
     // Write to file
     try (FileOutputStream fileOut = new FileOutputStream("comissões.xlsx")) {
       workbook.write(fileOut);
-      Alerts.showAlert("Sucesso", "Arquivo Excel gerado com sucesso!", null, AlertType.INFORMATION);
+      Alerts.showAlert(
+        "Sucesso", "Arquivo Excel gerado com sucesso!",
+        null, AlertType.INFORMATION
+      );
     } catch (IOException e) {
       Alerts.showAlert(
         "Erro", "Falha ao gerar o arquivo. Entre em contato com o suporte.",
