@@ -9,6 +9,8 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import org.apache.poi.ss.formula.functions.T;
+
 import com.application.Main;
 import com.db.DbException;
 import com.model.entities.Client;
@@ -557,7 +559,13 @@ public class ClientListController extends Main {
       .filter(result -> result == ButtonType.OK).isPresent()
     ) {
       try {
-        clientService.delete(client.getId());
+        boolean isLandlord = client.getClientType().equals(ClientType.LANDLORD);
+        List<String> guarantors =
+          clientService.getGuarantorsById(client.getId());
+        boolean usedGuarantor = guarantors != null ? true : false;
+
+        clientService.delete(client.getId(), isLandlord, usedGuarantor);
+
         setupPagination();
         Alerts.showAlert(
           "Sucesso", "Cliente apagado com sucesso!",

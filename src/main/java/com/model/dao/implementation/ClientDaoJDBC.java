@@ -153,7 +153,7 @@ public class ClientDaoJDBC implements ClientDao {
   }
 
   @Override
-  public void deleteByIdDao(int id) {
+  public void deleteByIdDao(int id, boolean isLandlord, boolean usedGuarantor) {
     PreparedStatement st = null;
     try {
       st = conn.prepareStatement(
@@ -164,10 +164,20 @@ public class ClientDaoJDBC implements ClientDao {
       st.executeUpdate();
       DB.closeStatement(st);
 
-      st = conn.prepareStatement("DELETE FROM GUARANTORS WHERE TENANT_ID = ?");
-      st.setInt(1, id);
-      st.executeUpdate();
-      DB.closeStatement(st);
+      if (usedGuarantor) {
+        st =
+          conn.prepareStatement("DELETE FROM GUARANTORS WHERE TENANT_ID = ?");
+        st.setInt(1, id);
+        st.executeUpdate();
+        DB.closeStatement(st);
+      }
+
+      if (isLandlord) {
+        st = conn.prepareStatement("DELETE FROM ESTATES WHERE LANDLORD_ID = ?");
+        st.setInt(1, id);
+        st.executeUpdate();
+        DB.closeStatement(st);
+      }
 
       st = conn.prepareStatement("DELETE FROM CLIENTS WHERE ID = ?");
       st.setInt(1, id);

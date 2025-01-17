@@ -29,8 +29,8 @@ public class ClientService {
     dao.updateDao(obj);
   }
 
-  public void delete(int id) {
-    dao.deleteByIdDao(id);
+  public void delete(int id, boolean isLandlord, boolean usedGuarantor) {
+    dao.deleteByIdDao(id, isLandlord, usedGuarantor);
   }
 
   public List<Client> search(String filter, String argument) {

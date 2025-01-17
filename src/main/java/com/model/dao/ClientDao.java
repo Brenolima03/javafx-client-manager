@@ -9,7 +9,7 @@ public interface ClientDao {
   Client findClientByIdDao(int id);
   List<Client> findAllDao();
   void updateDao(Client obj);
-  void deleteByIdDao(int id);
+  void deleteByIdDao(int id, boolean isLandlord, boolean usedGuarantor);
   List<Client> findPaginatedDao(int page, int pageSize);
   List<Client> searchDao(String filter, String argument);
   List<String> getGuarantorsById(int id);
