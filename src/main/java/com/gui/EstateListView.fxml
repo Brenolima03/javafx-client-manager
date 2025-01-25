@@ -26,8 +26,9 @@
         <!-- Left part of the container with search-related elements -->
         <HBox spacing="10">
           <TextField fx:id="searchField" promptText="Busque..." />
-          <ComboBox fx:id="filtersCombobox" promptText="Filtros" />
+          <ComboBox fx:id="filterCombobox" promptText="Filtros" />
           <Button fx:id="searchButton"/>
+          <Label fx:id="message" />
         </HBox>
         <!-- Spacer (Empty HBox with Hgrow set to ALWAYS) -->
         <HBox HBox.hgrow="ALWAYS"/>
@@ -37,8 +38,8 @@
         </HBox>
       </HBox>
 
-      <TableView fx:id="estateTable" prefWidth="1800" minWidth="1800"
-        maxWidth="1800" prefHeight="559">
+      <TableView fx:id="estateTable" editable="true"
+        prefWidth="1800" minWidth="1800" maxWidth="1800" prefHeight="559">
         <columns>
           <TableColumn fx:id="addressColumn" text="Endereço"/>
           <TableColumn fx:id="numberColumn" text="Número"/>
@@ -48,6 +49,7 @@
           <TableColumn fx:id="tenantColumn" text="Locatário"/>
           <TableColumn fx:id="landlordColumn" text="Locador"/>
           <TableColumn fx:id="descriptionColumn" text="Descrição"/>
+          <TableColumn fx:id="updateDeleteColumn" prefWidth="85"/>
         </columns>
       </TableView>
       <Pagination fx:id="pagination"/>

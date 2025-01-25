@@ -28,9 +28,8 @@
         <!-- Left part of the container with search-related elements -->
         <HBox spacing="10">
           <TextField fx:id="searchField" promptText="Busque..." />
-          <ComboBox fx:id="filtersCombobox" promptText="filtros" />
+          <ComboBox fx:id="filterCombobox" promptText="filtros" />
           <Button fx:id="searchButton" />
-          <Label fx:id="message" />
         </HBox>
         <!-- Spacer (Empty HBox with Hgrow set to ALWAYS) -->
         <HBox HBox.hgrow="ALWAYS"/>
@@ -43,15 +42,18 @@
       <TableView fx:id="clientTable" editable="true"
         prefWidth="1800" minWidth="1800" maxWidth="1800" prefHeight="559">
         <columns>
-          <TableColumn fx:id="nameColumn" text="Nome" editable="true"/>
+          <TableColumn fx:id="nameColumn" text="Nome"/>
           <TableColumn fx:id="cpfCnpjColumn" text="CPF | CNPJ"/>
-          <TableColumn fx:id="birthDateColumn" text="Nascimento"/>
-          <TableColumn fx:id="telephoneColumn" text="Telefone" editable="true"/>
-          <TableColumn fx:id="contractColumn" text="Contrato"/>
-          <TableColumn fx:id="guaranteeTypeColumn" text="Garantia contratual"/>
-          <TableColumn fx:id="guarantorColumn" text="Fiador | Seguradora" />
-          <TableColumn fx:id="depositColumn" text="Caução"/>
-          <TableColumn fx:id="typeColumn" text="Tipo"/>
+          <TableColumn fx:id="rgColumn" text="RG"/>
+          <TableColumn fx:id="telephoneColumn" text="Telefone"/>
+          <TableColumn fx:id="maritalStatusColumn" text="Estado civil"/>
+          <TableColumn fx:id="professionColumn" text="Profissão"/>
+          <TableColumn fx:id="addressColumn" text="Endereço"/>
+          <TableColumn fx:id="neighborhoodColumn" text="Bairro"/>
+          <TableColumn fx:id="cityColumn" text="Cidade"/>
+          <TableColumn fx:id="stateColumn" text="Estado"/>
+          <TableColumn fx:id="clientTypeColumn" text="Tipo"/>
+          <TableColumn fx:id="contractsColumn" text="Contratos"/>
           <TableColumn fx:id="updateDeleteColumn" prefWidth="85"/>
         </columns>
       </TableView>

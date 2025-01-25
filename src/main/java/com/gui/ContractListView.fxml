@@ -32,7 +32,7 @@
         <!-- Left part of the container with search-related elements -->
         <HBox spacing="10">
           <TextField fx:id="searchField" promptText="Busque..." />
-          <ComboBox fx:id="filtersCombobox" promptText="filtros" />
+          <ComboBox fx:id="filterCombobox" promptText="filtros" />
           <Button fx:id="searchButton" />
           <Label fx:id="message" />
         </HBox>
@@ -69,7 +69,8 @@
           <TableColumn fx:id="rentEndColumn" text="Término da locação"/>
           <TableColumn fx:id="rentValueColumn" text="Valor do aluguel"/>
           <TableColumn fx:id="guaranteeTypeColumn" text="Garantia contratual"/>
-          <TableColumn fx:id="guarantorColumn" text="Fiador | Seguradora"/>
+          <TableColumn fx:id="depositColumn" text="Caução"/>
+          <TableColumn fx:id="guarantorsColumn" text="Fiador | Seguradora"/>
           <TableColumn fx:id="downloadColumn" text="Baixar" prefWidth="85"/>
         </columns>
       </TableView>
