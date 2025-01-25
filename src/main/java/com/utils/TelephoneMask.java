@@ -3,6 +3,24 @@ package com.utils;
 import javafx.scene.control.TextField;
 
 public class TelephoneMask {
+  public static String applyTelephoneMaskFromDatabase(String telephone) {
+    if (telephone == null || telephone.isEmpty()) return "";
+
+    telephone = telephone.replaceAll("\\D", "");
+
+    if (telephone.length() == 11)
+      return telephone.replaceFirst(
+        "(\\d{2})(\\d{5})(\\d{4})", "($1) $2-$3"
+      );
+
+    if (telephone.length() == 10)
+      return telephone.replaceFirst(
+        "(\\d{2})(\\d{4})(\\d{4})", "($1) $2-$3"
+      );
+
+    return telephone;
+  }
+
   public static void applyTelephoneMask(TextField telephoneField) {
     telephoneField.textProperty().addListener(
     (observable, oldValue, newValue) -> {
