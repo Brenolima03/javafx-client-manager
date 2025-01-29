@@ -38,11 +38,11 @@
     <!-- Second Row -->
     <Label text="Valor do aluguel" GridPane.columnIndex="0"
       GridPane.rowIndex="3"/>
-    <TextField fx:id="rentValue" promptText="1000" prefWidth="300"
+    <TextField fx:id="rentValueField" promptText="1000" prefWidth="300"
       GridPane.columnIndex="1" GridPane.rowIndex="3"/>
 
     <Label text="Caução" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-    <TextField fx:id="deposit" promptText="Valor da caução" prefWidth="300"
+    <TextField fx:id="depositField" promptText="Valor da caução" prefWidth="300"
       GridPane.columnIndex="1" GridPane.rowIndex="4"/>
 
     <Label text="UC" GridPane.columnIndex="0"
@@ -88,8 +88,8 @@
     <!-- Partner Name -->
     <Label text="Nome do cônjuge" GridPane.columnIndex="0"
       GridPane.rowIndex="12"/>
-    <TextField fx:id="partnerName" promptText="Nome do cônjuge" prefWidth="300"
-      GridPane.columnIndex="1" GridPane.rowIndex="12"/>
+    <TextField fx:id="partnerNameField" promptText="Nome do cônjuge"
+      prefWidth="300" GridPane.columnIndex="1" GridPane.rowIndex="12"/>
   </GridPane>
 
   <HBox spacing="10" alignment="CENTER" style="-fx-padding: 30 0 0 0;">

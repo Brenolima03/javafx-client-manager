@@ -2,7 +2,6 @@ package com.services;
 
 import java.util.List;
 
-import com.db.DbException;
 import com.model.dao.DaoFactory;
 import com.model.dao.EstateDao;
 import com.model.entities.Estate;
@@ -18,6 +17,10 @@ public class EstateService {
     return dao.findAllEstatesDao();
   }
 
+  public void update(Estate obj) {
+    dao.updateDao(obj);
+  }
+
   public Estate findState(int id) {
     return dao.findStateDao(id);
   }
@@ -26,18 +29,11 @@ public class EstateService {
     return dao.searchDao(filter, argument);
   }
 
-  public int count() {
-    return dao.countDao();
+  public List<Estate> getAllClientEstates(int landlordId) {
+    return dao.getAllClientEstatesDao(landlordId);
   }
 
-  public List<Estate> findPaginated(int page, int pageSize) {
-    try {
-      return dao.findPaginatedDao(page, pageSize);
-    } catch (DbException e) {
-      System.err.println(
-        "Error fetching paginated estates: " + e.getMessage()
-      );
-      throw e;
-    }
+  public int count() {
+    return dao.countDao();
   }
 }

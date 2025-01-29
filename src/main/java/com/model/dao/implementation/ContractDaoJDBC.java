@@ -49,7 +49,7 @@ public class ContractDaoJDBC implements ContractDao {
       if (guarantee != null) {
         guaranteeType = guarantee.getGuaranteeType() != null ? 
         guarantee.getGuaranteeType().name() : null;
-  
+
         if (
           Guarantee.GuaranteeType.GUARANTOR.equals(
             guarantee.getGuaranteeType()
@@ -65,7 +65,7 @@ public class ContractDaoJDBC implements ContractDao {
           GUARANTOR_ID, CONTRACT_SIGNING_DATE, DEPOSIT, GUARANTEE_TYPE
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       """;
-  
+
       st = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
       st.setInt(1, tenantId);
@@ -81,14 +81,14 @@ public class ContractDaoJDBC implements ContractDao {
       st.setDate(11, signingDate != null ? Date.valueOf(signingDate) : null);
       st.setDouble(12, deposit);
       st.setString(13, guaranteeType);
-  
+
       int rowsAffected = st.executeUpdate();
-  
+
       if (rowsAffected == 0)
         throw new DbException(
           "Unexpected error! No rows affected while inserting contract."
         );
-  
+
       // Get the generated contract id
       generatedKeys = st.getGeneratedKeys();
       if (generatedKeys.next()) {
@@ -97,8 +97,10 @@ public class ContractDaoJDBC implements ContractDao {
         obj.setId(contractId);
       }
 
+      insertClientContract(tenantId, obj.getId());
+      insertClientContract(landlordId, obj.getId());
       insertTenantToEstate(tenantId, estateId);
-  
+
     } catch (SQLException e) {
       throw new DbException(
         "Error during contract insertion: " + e.getMessage(), e
@@ -106,6 +108,25 @@ public class ContractDaoJDBC implements ContractDao {
     } finally {
       DB.closeStatement(st);
       DB.closeResultSet(generatedKeys);
+    }
+  }
+
+  // Helper method to insert into CLIENT_CONTRACT table
+  private void insertClientContract(int clientId, int contractId) {
+    PreparedStatement st = null;
+    try {
+      String sql =
+        "INSERT INTO CLIENT_CONTRACT (CLIENT_ID, CONTRACT_ID) VALUES (?, ?)";
+      st = conn.prepareStatement(sql);
+      st.setInt(1, clientId);
+      st.setInt(2, contractId);
+      st.executeUpdate();
+    } catch (SQLException e) {
+      throw new DbException(
+        "Error inserting into CLIENT_CONTRACT table: " + e.getMessage(), e
+      );
+    } finally {
+      DB.closeStatement(st);
     }
   }
 
@@ -157,9 +178,9 @@ public class ContractDaoJDBC implements ContractDao {
       st = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
       st.setInt(1, tenantId);
       st.setInt(2, estateId);
-  
+
       int affectedRows = st.executeUpdate();
-  
+
       if (affectedRows > 0) {
         generatedKeys = st.getGeneratedKeys();
         if (generatedKeys.next()) return generatedKeys.getInt(1);
@@ -182,12 +203,14 @@ public class ContractDaoJDBC implements ContractDao {
       contract.setTenant(rs.getInt("TENANT_ID"));
       contract.setLandlord(rs.getInt("LANDLORD_ID"));
       contract.setEstate(rs.getInt("ESTATE_ID"));
+      contract.setGuarantor(rs.getInt("GUARANTOR_ID"));
       contract.setRentBeginning(rs.getDate("RENT_BEGINNING").toLocalDate());
       contract.setRentEnd(rs.getDate("RENT_END").toLocalDate());
       contract.setContractSigningDate(
         rs.getDate("CONTRACT_SIGNING_DATE").toLocalDate()
       );
       contract.setRentValue(rs.getDouble("RENT_VALUE"));
+      contract.setDepositValue(rs.getDouble("DEPOSIT"));
       contract.setEnergyConsumerUnit(rs.getString("ENERGY_CONSUMER_UNIT"));
       contract.setWaterRegistrationNumber(
         rs.getString("WATER_REGISTRATION_NUMBER")
@@ -229,8 +252,7 @@ public class ContractDaoJDBC implements ContractDao {
 
       List<Contract> list = new ArrayList<>();
 
-      while (rs.next())
-        list.add(instantiateContractDao(rs));
+      while (rs.next()) list.add(instantiateContractDao(rs));
 
       return list.isEmpty() ? null : list;
     } catch (SQLException e) {
@@ -242,23 +264,22 @@ public class ContractDaoJDBC implements ContractDao {
   }
 
   @Override
-  public List<Contract> getContractsByDateDao(String startDate, String endDate) {
+  public List<Contract> getContractsByDateDao(String startDate, String endDate){
     PreparedStatement st = null;
     ResultSet rs = null;
     try {
-      String sql = "SELECT * FROM CONTRACTS WHERE RENT_BEGINNING BETWEEN ? AND ?";
-  
+      String sql =
+        "SELECT * FROM CONTRACTS WHERE RENT_BEGINNING BETWEEN ? AND ?";
+
       st = conn.prepareStatement(sql);
       st.setString(1, startDate);
       st.setString(2, endDate);
       rs = st.executeQuery();
-  
+
       List<Contract> list = new ArrayList<>();
-  
-      while (rs.next()) {
-        list.add(instantiateContractDao(rs));
-      }
-  
+
+      while (rs.next()) list.add(instantiateContractDao(rs));
+
       return list.isEmpty() ? null : list;
     } catch (SQLException e) {
       throw new DbException("Erro ao buscar os contratos: " + e.getMessage());
@@ -302,39 +323,17 @@ public class ContractDaoJDBC implements ContractDao {
         st.setString(paramIndex++, searchPattern);
       }
       rs = st.executeQuery();
-  
+
       List<Contract> list = new ArrayList<>();
 
       while (rs.next()) list.add(instantiateContractDao(rs));
-  
+
       return list.isEmpty() ? null : list;
     } catch (SQLException e) {
       throw new DbException("Error executing search: " + e.getMessage());
     } finally {
       DB.closeStatement(st);
       DB.closeResultSet(rs);
-    }
-  }
-
-  @Override
-  public List<Contract> findPaginatedDao(int page, int pageSize) {
-    try (PreparedStatement ps = conn.prepareStatement(
-      "SELECT * FROM CONTRACTS LIMIT ? OFFSET ?"
-    )) {
-      ps.setInt(1, pageSize);
-      ps.setInt(2, (page - 1) * pageSize);
-
-      List<Contract> contracts = new ArrayList<>();
-      ResultSet rs = ps.executeQuery();
-
-      while (rs.next()) {
-        contracts.add(instantiateContractDao(rs));
-      }
-
-      return contracts;
-
-    } catch (SQLException e) {
-      throw new DbException(e.getMessage());
     }
   }
 
@@ -349,5 +348,57 @@ public class ContractDaoJDBC implements ContractDao {
       throw new DbException(e.getMessage());
     }
     return 0;
+  }
+
+  @Override
+  public String getClientDao(int id) {
+    try (PreparedStatement ps = conn.prepareStatement(
+      "SELECT NAME FROM CLIENTS WHERE ID = ?"
+    )) {
+      ps.setInt(1, id);
+      try (ResultSet rs = ps.executeQuery()) {
+        if (rs.next())
+          return rs.getString(1);
+      }
+    } catch (SQLException e) {
+      throw new DbException(e.getMessage());
+    }
+    return null;
+  }
+
+  @Override
+  public List<String> getGuarantorsDao(int id) throws DbException {
+    String sql = """
+      SELECT G.GUARANTOR_NAME AS GUARANTOR_NAME, G.PARTNER_NAME,
+      G.IS_SPONSOR_MARRIED
+      FROM GUARANTORS G
+      JOIN CONTRACTS C ON C.GUARANTOR_ID = G.ID
+      WHERE C.ID = ?
+    """;
+
+    List<String> guarantors = new ArrayList<>();
+
+    try (PreparedStatement st = conn.prepareStatement(sql)) {
+      st.setInt(1, id);
+
+      try (ResultSet rs = st.executeQuery()) {
+        while (rs.next()) {
+          String guarantorName = rs.getString("GUARANTOR_NAME");
+          if (guarantorName != null && !guarantorName.isBlank())
+            guarantors.add(guarantorName);
+
+          if (rs.getBoolean("IS_SPONSOR_MARRIED")) {
+            String partnerName = rs.getString("PARTNER_NAME");
+            if (partnerName != null && !partnerName.isBlank()) {
+              guarantors.add(partnerName);
+            }
+          }
+        }
+      }
+    } catch (SQLException e) {
+      throw new DbException("Erro ao buscar fiador para o ID: " + id, e);
+    }
+
+    return guarantors;
   }
 }

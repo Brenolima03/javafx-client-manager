@@ -68,7 +68,7 @@ public class EstateDaoJDBC implements EstateDao {
     try (PreparedStatement ps = conn.prepareStatement(sql)) {
       ps.setInt(1, id);
       ResultSet rs = ps.executeQuery();
-  
+
       if (rs.next()) {
         int estateId = rs.getInt("ID");
         int tenantId = rs.getInt("TENANT_ID");
@@ -79,7 +79,7 @@ public class EstateDaoJDBC implements EstateDao {
         String city = rs.getString("CITY");
         String state = rs.getString("STATE");
         String description = rs.getString("DESCRIPTION");
-  
+
         return new Estate(
           estateId, tenantId, landlordId, address, number,
           neighborhood, city, state, description
@@ -98,14 +98,11 @@ public class EstateDaoJDBC implements EstateDao {
     ResultSet rs = null;
 
     try {
-      st = conn.prepareStatement("SELECT ID, ADDRESS FROM ESTATES");
+      st = conn.prepareStatement("SELECT * FROM ESTATES");
       rs = st.executeQuery();
   
       while (rs.next()) {
-        Estate estate = new Estate();
-        estate.setId(rs.getInt("ID"));
-        estate.setAddress(rs.getString("ADDRESS"));
-        estates.add(estate);
+        estates.add(instantiateEstateDao(rs));
       }
     } catch (SQLException e) {
       throw new DbException("Error retrieving estates: " + e.getMessage(), e);
@@ -115,6 +112,24 @@ public class EstateDaoJDBC implements EstateDao {
     }
   
     return estates;
+  }
+
+  @Override
+  public void updateDao(Estate obj) {
+    PreparedStatement st = null;
+    try {
+      String sql = "UPDATE ESTATES SET DESCRIPTION = ? WHERE ID = ?";
+      st = conn.prepareStatement(sql);
+      st.setString(1, obj.getDescription());
+      st.setInt(2, obj.getId());
+      st.executeUpdate();
+    } catch (SQLException e) {
+      throw new DbException(
+        "Erro ao atualizar o imóvel para o ID: " + obj.getId(), e
+      );
+    } finally {
+      DB.closeStatement(st);
+    }
   }
 
   private Estate instantiateEstateDao(ResultSet rs) throws SQLException {
@@ -135,27 +150,6 @@ public class EstateDaoJDBC implements EstateDao {
     return estate;
   }
 
-  @Override
-  public List<Estate> findPaginatedDao(int page, int pageSize) {
-    try (PreparedStatement ps = conn.prepareStatement(
-      "SELECT * FROM ESTATES LIMIT ? OFFSET ?"
-    )) {
-      ps.setInt(1, pageSize);
-      ps.setInt(2, (page - 1) * pageSize);
-
-      List<Estate> estates = new ArrayList<>();
-      ResultSet rs = ps.executeQuery();
-
-      while (rs.next()) {
-        estates.add(instantiateEstateDao(rs));
-      }
-
-      return estates;
-
-    } catch (SQLException e) {
-      throw new DbException(e.getMessage());
-    }
-  }
   @Override
   public List<Estate> searchDao(String filter, String argument) {
     PreparedStatement st = null;
@@ -214,5 +208,26 @@ public class EstateDaoJDBC implements EstateDao {
       throw new DbException(e.getMessage());
     }
     return 0;
+  }
+
+  @Override
+  public List<Estate> getAllClientEstatesDao(int landlordId) {
+    try (PreparedStatement ps = conn.prepareStatement(
+      "SELECT * FROM ESTATES WHERE LANDLORD_ID = ?"
+    )) {
+      ps.setInt(1, landlordId);
+
+      List<Estate> estates = new ArrayList<>();
+      ResultSet rs = ps.executeQuery();
+
+      while (rs.next()) {
+        Estate estate = instantiateEstateDao(rs);
+        estates.add(estate);
+      }
+      return estates;
+
+    } catch (SQLException e) {
+      throw new DbException(e.getMessage());
+    }
   }
 }

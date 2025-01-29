@@ -27,7 +27,7 @@
 }
 
 #filterCombobox .arrow {
-  -fx-background-color: white;
+  -fx-background-color: #FFFFFF;
   -fx-background-insets: 0;
 }
 
@@ -89,8 +89,8 @@
 }
 
 .combo-box-popup .list-view .list-cell:hover .text,
-.combo-box-popup .list-view .list-cell:focused .text {
-  -fx-fill: white;
+.combo-box-popup .list-view .list-cell:selected .text {
+  -fx-fill: #FFFFFF;
 }
 
 /* ======================== Locked Rows ======================== */

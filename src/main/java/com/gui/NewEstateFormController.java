@@ -12,9 +12,11 @@ import com.model.entities.Estate;
 import com.services.ClientService;
 import com.services.EstateService;
 import com.utils.CpfCnpj;
+import com.utils.CustomContextMenu;
 import com.utils.Icons;
 import com.utils.States;
 
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -75,22 +77,6 @@ public class NewEstateFormController {
     this.estateController = controller;
   }
 
-  @FXML
-  private void initialize() {
-    if (estateService == null)
-      throw new IllegalStateException(
-        "EstateService was not initialized. " +
-        "Call setEstateService() before loading the controller.");
-
-    if (estateController != null) estateController.refreshTableData();
-    else System.out.println("estateController is not initialized!");
-
-    setupButtons();
-    populateTenantAndLandlordFields();
-    States.populateStateCombobox(stateComboBox);
-    stateComboBox.setValue("MS");
-  }
-
   private void setupButtons() {
     saveButton.setOnAction(event -> handleSave());
     cancelButton.setOnAction(event -> closeWindow());
@@ -122,18 +108,16 @@ public class NewEstateFormController {
 
   private void handleSave() {
     if (estate == null) estate = new Estate();
-  
-    // Retrieve values from the form fields
-    String address = addressField.getText();
-    String number = numberField.getText();
-    String neighborhood = neighborhoodField.getText();
-    String city = cityField.getText();
+
+    String address = addressField.getText().trim();
+    String number = numberField.getText().trim();
+    String neighborhood = neighborhoodField.getText().trim();
+    String city = cityField.getText().replaceAll("\\d", "").trim();
     String state = stateComboBox.getValue();
     String landlord = landlordField.getValue();
-    String description = descriptionField.getText();
+    String description = descriptionField.getText().trim();
     String invalidField = null;
 
-    // Validate each field and identify the invalid one
     if (address == null || address.trim().isEmpty()) {
       invalidField = "Endereço";
     } else if (number == null || number.trim().isEmpty()) {
@@ -148,7 +132,6 @@ public class NewEstateFormController {
       invalidField = "Descrição";
     }
 
-    // If an invalid field is detected, show an alert and return
     if (invalidField != null) {
       Alerts.showAlert(
         "Erro de Validação",
@@ -159,7 +142,6 @@ public class NewEstateFormController {
       return;
     }
 
-    // Set the values into the Estate object
     estate.setAddress(address);
     estate.setNumber(Integer.parseInt(number));
     estate.setNeighborhood(neighborhood);
@@ -168,7 +150,6 @@ public class NewEstateFormController {
     estate.setLandlordId(landlordMap.get(landlord));
     estate.setDescription(description);
 
-    // Save estate to the database
     try {
       estateService.insert(estate);
     } catch (DbException e) {
@@ -181,13 +162,63 @@ public class NewEstateFormController {
       return;
     }
 
-    // Refresh the data and close the window
-    estateController.refreshTableData();
-    estateController.setupPagination();
+    estateController.setupPagination(
+      FXCollections.observableArrayList(estateService.findAllEstates())
+    );
     closeWindow();
   }
 
   private void closeWindow() {
     stage.close();
+  }
+
+  @FXML
+  private void initialize() {
+    try {
+      if (estateService == null)
+        throw new IllegalStateException(
+          "EstateService was not initialized. " +
+          "Call setEstateService() before loading the controller.");
+
+      setupButtons();
+      populateTenantAndLandlordFields();
+      stateComboBox.setItems(
+        FXCollections.observableArrayList(States.getAllStates())
+      );
+      stateComboBox.setValue("MS");
+
+      CustomContextMenu contextMenu = new CustomContextMenu();
+
+      addressField.focusedProperty().addListener(
+      (observable, oldValue, newValue) -> {
+        if (newValue)
+          contextMenu.setCustomContextMenuForTextFields(addressField);
+      });
+      numberField.focusedProperty().addListener(
+      (observable, oldValue, newValue) -> {
+        if (newValue)
+          contextMenu.setCustomContextMenuForTextFields(numberField);
+      });
+      neighborhoodField.focusedProperty().addListener(
+      (observable, oldValue, newValue) -> {
+        if (newValue)
+          contextMenu.setCustomContextMenuForTextFields(neighborhoodField);
+      });
+      cityField.focusedProperty().addListener(
+      (observable, oldValue, newValue) -> {
+        if (newValue)
+          contextMenu.setCustomContextMenuForTextFields(cityField);
+      });
+      descriptionField.focusedProperty().addListener(
+      (observable, oldValue, newValue) -> {
+        if (newValue)
+          contextMenu.setCustomContextMenuForTextFields(descriptionField);
+      });
+    } catch (IllegalStateException e) {
+      Alerts.showAlert(
+        "Erro ao abrir página ",
+        e.getMessage(), null, AlertType.ERROR
+      );
+    }
   }
 }

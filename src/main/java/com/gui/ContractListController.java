@@ -2,34 +2,30 @@ package com.gui;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
 
 import com.db.DbException;
 import com.model.entities.Client;
 import com.model.entities.Contract;
 import com.model.entities.Estate;
-import com.model.entities.Guarantee.GuaranteeType;
+import com.model.entities.Guarantee;
 import com.services.ClientService;
 import com.services.ContractService;
 import com.services.EstateService;
 import com.utils.ContractBuilder;
 import com.utils.Currency;
+import com.utils.CustomContextMenu;
+import com.utils.Date;
 import com.utils.Icons;
+import com.utils.TableCellConfiguration;
 
-import javafx.application.Platform;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert.AlertType;
@@ -42,20 +38,15 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.util.StringConverter;
 
 public class ContractListController {
   private int currentPage = 1;
   private final int pageSize = 10;
   private ClientService clientService;
   private EstateService estateService;
+  private ContractService contractService;
 
   @FXML
   private TableView <Contract> contractTable;
@@ -67,7 +58,10 @@ public class ContractListController {
   private Button searchButton;
 
   @FXML
-  private ComboBox <String> filtersCombobox;
+  private ComboBox <String> filterCombobox;
+
+  @FXML
+  private Button addContractButton;
 
   @FXML
   private DatePicker startDatePicker;
@@ -79,19 +73,16 @@ public class ContractListController {
   private Button applyDateButton;
 
   @FXML
-  private Button addContractButton;
-
-  @FXML
   private Button downloadButton;
 
   @FXML
   private TableColumn <Contract, Integer> contractIdColumn;
 
   @FXML
-  private TableColumn <Contract, String> landlordColumn;
+  private TableColumn <Contract, String> tenantColumn;
 
   @FXML
-  private TableColumn <Contract, String> tenantColumn;
+  private TableColumn <Contract, String> landlordColumn;
 
   @FXML
   private TableColumn <Contract, LocalDate> rentBeginningColumn;
@@ -100,13 +91,16 @@ public class ContractListController {
   private TableColumn <Contract, LocalDate> rentEndColumn;
 
   @FXML
-  private TableColumn <Contract, Double> rentValueColumn;
+  private TableColumn <Contract, String> rentValueColumn;
 
   @FXML
   private TableColumn <Contract, String> guaranteeTypeColumn;
 
   @FXML
-  private TableColumn <Contract, List <String>> guarantorColumn;
+  private TableColumn <Contract, String> depositColumn;
+
+  @FXML
+  private TableColumn <Contract, List <String>> guarantorsColumn;
 
   @FXML
   private TableColumn <Contract, String> downloadColumn;
@@ -114,118 +108,25 @@ public class ContractListController {
   @FXML
   private Pagination pagination;
 
-  private Stage currentStage;
-
-  private ContractService contractService;
-
-  public void setStage(Stage stage) {
-    this.currentStage = stage;
+  public void setClientService(ClientService clientService) {
+    this.clientService = clientService;
+  }
+  
+  public void setEstateService(EstateService estateService) {
+    this.estateService = estateService;
   }
 
   public void setContractService(ContractService contractService) {
     this.contractService = contractService;
   }
 
-  public void setClientService(ClientService clientService) {
-    this.clientService = clientService;
-  }
-
-  public void setEstateService(EstateService estateService) {
-    this.estateService = estateService;
-  }
-
   private void setupFilterCombobox() {
-    filtersCombobox.setItems(
+    filterCombobox.setItems(
       FXCollections.observableArrayList(
         "Contrato", "Locatário", "Locador", "Valor do aluguel"
       )
     );
-    filtersCombobox.setValue("Contrato");
-  }
-
-  @FXML
-  public void openContractList(ActionEvent event) {
-    if (currentStage == null) {
-      System.err.println(
-        "Error: Current stage is not set. Ensure setStage() is called."
-      );
-      return;
-    }
-
-    try {
-      VBox root = new VBox();
-      root.getChildren().add(new Label("Contract List View"));
-
-      Scene scene = new Scene(root);
-      currentStage.setScene(scene);
-
-      currentStage.show();
-    } catch (Exception e) {}
-  }
-
-  private void blockTypingExceptCtrlC(Node node) {
-    node.addEventFilter(KeyEvent.ANY, event -> {
-      if (!(event.isControlDown() && event.getCode() == KeyCode.C))
-        event.consume();
-    });
-  }
-
-  private void setupButton(
-    Button button, String path,
-    EventHandler <ActionEvent> event, boolean isTransparent
-  ) {
-    Icons.setButtonIcon(button, path);
-    button.setPrefWidth(38);
-    button.setPrefHeight(38);
-    button.setOnAction(event);
-    if (isTransparent)
-      button.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
-  }
-
-  private void searchContracts() {
-    String filter = filtersCombobox.getSelectionModel().getSelectedItem();
-    String searchText = searchField.getText().trim();
-
-    if (filter == null || filter.isEmpty()) {
-      Alerts.showAlert(
-        null, "Selecione o filtro apropriado.",
-        null, AlertType.ERROR
-      );
-      return;
-    }
-
-    try {
-      List <Contract> contracts =
-        searchText.isEmpty() ?
-        contractService.findPaginated(currentPage = 1, pageSize) :
-        contractService.search(filter, searchText);
-
-      if (contracts == null || contracts.isEmpty()) {
-        Alerts.showAlert(
-          null, "Nenhum contrato encontrado",
-          null, AlertType.ERROR
-        );
-        return;
-      }
-
-      int totalContracts = searchText.isEmpty() ?
-        contractService.count() : contracts.size();
-      int pageCount = (totalContracts + pageSize - 1) / pageSize;
-
-      pagination.setPageCount(pageCount);
-      pagination.setVisible(pageCount > 1);
-      pagination.setCurrentPageIndex(Math.min(currentPage, pageCount) - 1);
-
-      contractTable.getSortOrder().clear();
-      Platform.runLater(() -> {
-        contractTable.getItems().setAll(contracts);
-      });
-
-    } catch (DbException e) {
-      Alerts.showAlert(
-        "Erro ao buscar ", e.getMessage(), null, AlertType.ERROR
-      );
-    }
+    filterCombobox.setValue("Contrato");
   }
 
   @FXML
@@ -237,10 +138,20 @@ public class ContractListController {
       List<Contract> contracts =
         contractService.getContractsByDate(startDate, endDate);
 
-      if (contracts != null && !contracts.isEmpty()) refreshTableData();
-      else contractTable.setItems(FXCollections.observableArrayList());
+      if (contracts != null && !contracts.isEmpty())
+        refreshTableData(
+          FXCollections.observableArrayList(contracts)
+        );
+      else {
+        contractTable.setItems(
+          FXCollections.observableArrayList(contractService.getAllContracts())
+        );
+        Alerts.showAlert(
+          null, "Nenhum contrato encontrado", null, AlertType.WARNING
+        );
+      }
     }
-  }  
+  }
 
   @FXML
   private void downloadContracts() {
@@ -290,238 +201,110 @@ public class ContractListController {
     }
   }
 
-  private ObservableList <Contract> getContractData(int page) {
-    try {
-      return FXCollections.observableArrayList(
-        contractService.findPaginated(page, pageSize)
-      );
-    } catch (Exception e) {
-      return FXCollections.observableArrayList();
-    }
+  private void setupActionColumn() {
+    downloadColumn.setCellFactory(param -> new TableCell<Contract, String>() {
+      private final Button downloadButton = new Button();
+      private final HBox actionBox = new HBox(19, downloadButton);
+
+      {
+        Icons.setupTransparentButton(
+          downloadButton, "icons/download.png", event -> {
+            Contract contract = getTableRow().getItem();
+            if (contract != null) {
+              int tenantId = contract.getTenant();
+              int landlordId = contract.getLandlord();
+              int estateId = contract.getEstate();
+
+              Client tenantObj = clientService.findClientById(tenantId);
+              Client landlordObj = clientService.findClientById(landlordId);
+              Estate estateObj = estateService.findState(estateId);
+
+              try {
+                ContractBuilder.emitContract(
+                  tenantObj, landlordObj, estateObj, contract
+                );
+
+                Alerts.showAlert(
+                  "Sucesso", "Contrato emitido com sucesso!",
+                  null, AlertType.INFORMATION
+                );
+              } catch (Exception e) {
+                Alerts.showAlert(
+                  "Erro",
+                  "Falha ao emitir o contrato. Entre em contato com o suporte.",
+                  e.getMessage(), AlertType.ERROR
+                );
+              }
+            }
+          });
+        actionBox.setAlignment(Pos.CENTER);
+      }
+      @Override
+      protected void updateItem(String item, boolean empty) {
+        super.updateItem(item, empty);
+        setGraphic(empty ? null : actionBox);
+      }
+    });
   }
 
-  public void refreshTableData() {
-    contractTable.setItems(getContractData(currentPage));
+  public void refreshTableData(ObservableList<Contract> contractList) {
+    contractTable.getItems().clear();
+    contractTable.setItems(contractList);
     setupActionColumn();
   }
 
-  public void setupPagination() {
-    int totalContracts = contractService.count();
+  public void setupPagination(ObservableList<Contract> contractList) {
+    int totalContracts = contractList.size();
     int pageCount = (totalContracts + pageSize - 1) / pageSize;
 
     pagination.setPageCount(pageCount);
-    // Show pagination only if more than one page
     pagination.setVisible(pageCount > 1);
     pagination.setCurrentPageIndex(currentPage - 1);
-    // Display 5 pages at once
     pagination.setMaxPageIndicatorCount(5);
+
     // Set up the page factory to update the table based on selected page
     pagination.setPageFactory(pageIndex -> {
       currentPage = pageIndex + 1;
-      refreshTableData();
+
+      // Calculate the sublist for the current page
+      int fromIndex = (currentPage - 1) * pageSize;
+      int toIndex = Math.min(fromIndex + pageSize, totalContracts);
+      List<Contract> contractsForPage =
+        contractList.subList(fromIndex, toIndex);
+
+      refreshTableData(FXCollections.observableArrayList(contractsForPage));
       return new Label("");
     });
   }
 
-  private <T> void setupCell(TableColumn <Contract, T> column, double width) {
-    column.setPrefWidth(width);
-    column.setCellFactory(param -> new TableCell <> () {
-      private final TextField textField = new TextField();
-      {
-        textField.setStyle(
-          "-fx-background-color: transparent; -fx-alignment: center-left;"
+  private void handleSearch() {
+    String filter = filterCombobox.getSelectionModel().getSelectedItem();
+    String argument = searchField.getText().trim().replaceAll("[()\\-./]", "");
+
+    if (filter == null || filter.isEmpty()) {
+      Alerts.showAlert(
+        null, "Selecione o filtro apropriado.", null, AlertType.WARNING
+      );
+      return;
+    }
+
+    try {
+      List<Contract> contracts = argument.isEmpty() 
+        ? contractService.getAllContracts() 
+        : contractService.search(filter, argument);
+
+      if (contracts == null || contracts.isEmpty()) {
+        Alerts.showAlert(
+          null, "Nenhum contrato encontrado", null, AlertType.WARNING
         );
-      }
-    });
-  }
-
-  private <T> void configureNonEditableColumn(
-    TableColumn <Contract, T> column,
-    String property
-  ) {
-    column.setCellValueFactory(new PropertyValueFactory <> (property));
-    column.setCellFactory(tc -> {
-      TextFieldTableCell <Contract, T > cell =
-      new TextFieldTableCell <> (new StringConverter <T> () {
-        @Override
-        public String toString(T object) {
-          return object == null ? "" : object.toString();
-        }
-
-        @Override
-        public T fromString(String string) {
-          return null;
-        }
-      });
-
-      blockTypingExceptCtrlC(cell);
-
-      return cell;
-    });
-  }
-
-  private void configureColumn() {
-    configureNonEditableColumn(contractIdColumn, "id");
-    configureNonEditableColumn(tenantColumn, "tenant");
-    configureNonEditableColumn(landlordColumn, "landlord");
-    configureNonEditableColumn(rentBeginningColumn, "rentBeginning");
-    configureNonEditableColumn(rentEndColumn, "rentEnd");
-
-    tenantColumn.setCellValueFactory(col -> {
-      Contract contract = col.getValue();
-      Client tenantObj = clientService.findClientById(contract.getTenant());
-      String tenantName = tenantObj.getName();
-      return new SimpleStringProperty(tenantName);
-    });
-
-    landlordColumn.setCellValueFactory(col -> {
-      Contract contract = col.getValue();
-      Client landlordObj = clientService.findClientById(contract.getLandlord());
-      String landlordName = landlordObj.getName();
-      return new SimpleStringProperty(landlordName);
-    });
-    rentBeginningColumn.setCellFactory(col -> {
-      TextFieldTableCell <Contract, LocalDate> cell =
-      new TextFieldTableCell <> (new StringConverter <LocalDate> () {
-        private final DateTimeFormatter dateFormatter =
-          DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-        @Override
-        public String toString(LocalDate object) {
-          return object == null ? "" : object.format(dateFormatter);
-        }
-
-        @Override
-        public LocalDate fromString(String string) {
-          return null;
-        }
-      });
-      blockTypingExceptCtrlC(cell);
-      return cell;
-    });
-    rentEndColumn.setCellFactory(col -> {
-      TextFieldTableCell <Contract, LocalDate> cell =
-      new TextFieldTableCell <> (new StringConverter <LocalDate> () {
-        private final DateTimeFormatter dateFormatter =
-          DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-        @Override
-        public String toString(LocalDate object) {
-          return object == null ? "" : object.format(dateFormatter);
-        }
-
-        @Override
-        public LocalDate fromString(String string) {
-          return null;
-        }
-      });
-      blockTypingExceptCtrlC(cell);
-      return cell;
-    });
-    rentValueColumn.setCellValueFactory(tc ->
-    new SimpleObjectProperty<Double>(
-        tc.getValue().getRentValue() != 0 ? tc.getValue().getRentValue() : null
-      )
-    );
-
-    // Set the cell factory to allow editing and format the value as currency
-    rentValueColumn.setCellFactory(
-      tc -> new TextFieldTableCell <Contract, Double> (
-        new StringConverter <Double> () {
-      @Override
-      public String toString(Double object) {
-        return object != null ?
-        Currency.getCurrencyConverter().toString(object) : "";
+        contracts = contractService.getAllContracts();
       }
 
-      @Override
-      public Double fromString(String string) {
-        try {
-          return
-            Double.valueOf(string.replaceAll("[^\\d.]", ""));
-        } catch (NumberFormatException e) {
-          return 0.0;
-        }
-      }
-    }) {
-      @Override
-      public void updateItem(Double item, boolean empty) {
-        super.updateItem(item, empty);
-        setText(
-          empty || item == null ?
-          null : Currency.getCurrencyConverter().toString(item)
-        );
-      }
-    });
-
-    guaranteeTypeColumn.setCellValueFactory(cellData -> {
-      String guaranteeType = "";
-      int contract = cellData.getValue().getId();
-      guaranteeType = clientService.getGuaranteeTypeByContractId(contract);
-      return new SimpleStringProperty(guaranteeType);
-    });
-    guaranteeTypeColumn.setCellFactory(tc -> {
-      TextFieldTableCell <Contract, String> cell =
-      new TextFieldTableCell <> (new StringConverter <String> () {
-        @Override
-        public String toString(String object) {
-          if (object == null) return "";
-          try {
-            return GuaranteeType.valueOf(object).toString();
-          } catch (IllegalArgumentException e) {
-            return object; // Fallback for invalid input
-          }
-        }
-
-        @Override
-        public String fromString(String string) {
-          return string;
-        }
-      });
-      blockTypingExceptCtrlC(cell);
-      return cell;
-    });
-
-    setupComboBoxColumn(guarantorColumn, "transparent-combobox",
-    col -> {
-      int contract = col.getId();
-      List <String> guarantors = clientService.getGuarantorsById(contract);
-      return guarantors;
-    });
-  }
-  private void setupComboBoxColumn(
-    TableColumn <Contract, List <String>> column, String styleClass,
-    Function <Contract, List <String>> getterMethod
-  ) {
-    column.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper <> (
-      getterMethod.apply(cellData.getValue())
-    ));
-
-    column.setCellFactory(col -> new TableCell <Contract, List <String>> () {
-      private final ComboBox <String> comboBox = new ComboBox <> ();
-
-      @Override
-      protected void updateItem(List <String> items, boolean empty) {
-        super.updateItem(items, empty);
-
-        if (empty || items.isEmpty()) {
-          setGraphic(null);
-        } else {
-          comboBox.getItems().setAll(items);
-          comboBox.setValue(items.isEmpty() ? null : items.get(0));
-          comboBox.getStyleClass().add(styleClass);
-
-          setGraphic(comboBox);
-          comboBox.setEditable(isFocused());
-          comboBox.focusedProperty().addListener(
-            (observable, oldValue, newValue) -> {
-              contractTable.getSelectionModel().select(getIndex());
-              comboBox.setEditable(newValue);
-            });
-          blockTypingExceptCtrlC(comboBox);
-        }
-      }
-    });
+      setupPagination(FXCollections.observableArrayList(contracts));
+      searchField.clear();
+    } catch (DbException e) {
+      Alerts.showAlert("Erro ao buscar", e.getMessage(), null, AlertType.ERROR);
+    }
   }
 
   private void openNewContractForm() {
@@ -571,93 +354,119 @@ public class ContractListController {
     }
   }
 
-  private void setupActionColumn() {
-    downloadColumn.setCellFactory(param -> new TableCell<Contract, String>() {
-      private final Button downloadButton = new Button();
-      private final HBox actionBox = new HBox(19, downloadButton);
+  private void populateCells(
+    CustomContextMenu contextMenu, TableCellConfiguration tableCellConfig
+  ) {
+    tableCellConfig.configureCellFactory(
+      contractIdColumn, 100, "id", contextMenu
+    );
+    tableCellConfig.configureCellFactory(
+      tenantColumn, 225, "tenant", contextMenu
+    );
+    tableCellConfig.configureCellFactory(
+      landlordColumn, 225, "landlord", contextMenu
+    );
+    tableCellConfig.configureCellFactory(
+      rentBeginningColumn, 200, "rentBeginning", contextMenu
+    );
+    tableCellConfig.configureCellFactory(
+      rentEndColumn, 200, "rentEnd", contextMenu
+    );
+    tableCellConfig.configureCellFactory(
+      rentValueColumn, 160, "rentValue", contextMenu
+    );
+    tableCellConfig.configureCellFactory(
+      guaranteeTypeColumn, 220, "guarantee", contextMenu
+    );
+    tableCellConfig.configureCellFactory(
+      depositColumn, 160, "deposit", contextMenu
+    );
+    tableCellConfig.configureCellFactory(
+      guarantorsColumn, 220, "guarantors", contextMenu
+    );
 
-      {
-        setupButton(
-          downloadButton, "icons/download.png", event -> {
-            Contract contract = getTableRow().getItem();
-            if (contract != null) {
-              int tenantId = contract.getTenant();
-              int landlordId = contract.getLandlord();
-              int estateId = contract.getEstate();
+    TableCellConfiguration.setupComboBoxColumn(
+      contractTable, guarantorsColumn, "transparent-combobox", col -> {
+      List<String> guarantors = contractService.getGuarantors(col.getId());
 
-              Client tenantObj = clientService.findClientById(tenantId);
-              Client landlordObj = clientService.findClientById(landlordId);
-              Estate estateObj = estateService.findState(estateId);
+      return guarantors != null && !guarantors.isEmpty() ?
+        guarantors : Collections.emptyList();
+    });
 
-              try {
-                ContractBuilder.emitContract(
-                  tenantObj, landlordObj, estateObj, contract
-                );
+    tenantColumn.setCellValueFactory(cellData -> {
+      return new SimpleStringProperty(
+        contractService.getClient(cellData.getValue().getTenant())
+      );
+    });
 
-                Alerts.showAlert(
-                  "Sucesso", "Contrato emitido com sucesso!",
-                  null, AlertType.INFORMATION
-                );
-              } catch (Exception e) {
-                Alerts.showAlert(
-                  "Erro",
-                  "Falha ao emitir o contrato. Entre em contato com o suporte.",
-                  e.getMessage(), AlertType.ERROR
-                );
-              }
-            }
-          }, true);
-        actionBox.setAlignment(Pos.CENTER);
-      }
-      // Show the button
-      @Override
-      protected void updateItem(String item, boolean empty) {
-        super.updateItem(item, empty);
-        setGraphic(empty ? null : actionBox);
-      }
+    landlordColumn.setCellValueFactory(cellData -> {
+      return new SimpleStringProperty(
+        contractService.getClient(cellData.getValue().getLandlord())
+      );
+    });
+
+    rentValueColumn.setCellValueFactory(cellData -> {
+      double rent = cellData.getValue().getRentValue();
+      return new SimpleStringProperty(
+        rent > 0 ? Currency.getCurrencyConverter().toString(rent) : ""
+      );
+    });
+
+    depositColumn.setCellValueFactory(cellData -> {
+      double deposit = cellData.getValue().getDepositValue();
+      return new SimpleStringProperty(
+        deposit > 0 ? Currency.getCurrencyConverter().toString(deposit) : ""
+      );
+    });
+
+    guaranteeTypeColumn.setCellValueFactory(cellData -> {
+      Guarantee guarantee = cellData.getValue().getGuarantee();
+      String formattedGuarantee = guarantee.getGuaranteeType().toString();
+      return new SimpleStringProperty(formattedGuarantee);
     });
   }
 
   public void initialize() {
     try {
-      if (contractService == null) {
+      if (clientService == null)
         throw new IllegalStateException(
           "ClientService was not initialized. Call setClientService() " +
           "before loading the controller."
         );
-      }
-      contractTable.setPlaceholder(new Label("Não há contratos registrados"));
+
+      Icons.setupTransparentButton(
+        searchButton, "icons/search-icon.png",
+        event -> handleSearch()
+      );
+      Icons.setupTransparentButton(
+        addContractButton, "icons/add-icon.png",
+        event -> openNewContractForm()
+      );
+      Icons.setupTransparentButton(
+        downloadButton, "icons/download.png",
+        event -> downloadContracts()
+      );
+
+      contractTable.setPlaceholder(new Label("Não há clientes registrados"));
+
+      CustomContextMenu contextMenu = new CustomContextMenu();
+      TableCellConfiguration tableCellConfig = new TableCellConfiguration();
+
+      searchField.focusedProperty().addListener(
+      (observable, oldValue, newValue) -> {
+        if (newValue)
+          contextMenu.setCustomContextMenuForTextFields(searchField);
+      });
+      contextMenu.setCustomContextMenuForTextFields(searchField);
+
+      Date.applyDateMaskOnInputFields(startDatePicker);
+      Date.applyDateMaskOnInputFields(endDatePicker);
 
       setupFilterCombobox();
-
-      setupButton(
-        downloadButton, "icons/download.png",
-        event -> downloadContracts(), false
+      setupPagination(
+        FXCollections.observableArrayList(contractService.getAllContracts())
       );
-      setupButton(
-        searchButton, "icons/search-icon.png",
-        event -> searchContracts(), false
-      );
-      setupButton(
-        addContractButton, "icons/add-icon.png",
-        event -> openNewContractForm(), false
-      );
-      setupPagination();
-
-      // Set up column sizes
-      setupCell(contractIdColumn, 140);
-      setupCell(tenantColumn, 225);
-      setupCell(landlordColumn, 225);
-
-      setupCell(rentBeginningColumn, 225);
-      setupCell(rentEndColumn, 225);
-      setupCell(rentValueColumn, 225);
-
-      setupCell(guaranteeTypeColumn, 225);
-      setupCell(guarantorColumn, 220);
-
-      // Configure columns
-      configureColumn();
+      populateCells(contextMenu, tableCellConfig);
     } catch (IllegalStateException e) {
       Alerts.showAlert(
         "Erro ao abrir página ",

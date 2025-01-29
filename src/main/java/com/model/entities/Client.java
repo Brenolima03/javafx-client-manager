@@ -1,6 +1,8 @@
 package com.model.entities;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class Client {
@@ -10,7 +12,7 @@ public class Client {
   private String issuingOrganization;
   private String rg;
   private LocalDate birthDate;
-  private int contract;
+  private List<Integer> contracts = new ArrayList<>();
   private String telephone;
   private ClientType clientType;
   private MaritalStatus maritalStatus;
@@ -57,19 +59,19 @@ public class Client {
   public Client() {}
 
   public Client(
-    int id, String name, String cpfCnpj, String rg, String issuingOrganization,
-    LocalDate birthDate, int contract, String telephone, ClientType clientType,
-    MaritalStatus maritalStatus, String address, String nationality,
-    String profession, String neighborhood, String city, String state,
-    String zip
+    int id, String name, String cpfCnpj, List<Integer> contracts, String rg,
+    String issuingOrganization, LocalDate birthDate, String telephone,
+    ClientType clientType, MaritalStatus maritalStatus, String address,
+    String nationality, String profession, String neighborhood, String city,
+    String state, String zip
   ) {
     this.id = id;
     this.name = name;
     this.cpfCnpj = cpfCnpj;
+    this.contracts = contracts;
     this.rg = rg;
     this.issuingOrganization = issuingOrganization;
     this.birthDate = birthDate;
-    this.contract = contract;
     this.telephone = telephone;
     this.clientType = (clientType != null) ? clientType : ClientType.TENANT;
     this.maritalStatus = maritalStatus;
@@ -122,12 +124,12 @@ public class Client {
     this.issuingOrganization = issuingOrganization;
   }
 
-  public int getContract() {
-    return contract;
+  public List<Integer> getContracts() {
+    return contracts;
   }
 
-  public void setContract(int contract) {
-    this.contract = contract;
+  public void setContracts(List<Integer> contracts) {
+    this.contracts = contracts;
   }
 
   public LocalDate getBirthDate() {
@@ -243,8 +245,8 @@ public class Client {
   @Override
   public String toString() {
     return
-      "Client [name=" + name + ", cpfCnpj=" + cpfCnpj +
-      ", birthDate=" + birthDate + ", contract=" + contract +
-      ", telephone=" + telephone + ", clientType=" + clientType + "]";
+      "Client [name=" + name + ", cpfCnpj=" + cpfCnpj + ", contracts=" +
+      contracts + ", birthDate=" + birthDate + ", telephone=" + telephone +
+      ", clientType=" + clientType + "]";
   }
 }

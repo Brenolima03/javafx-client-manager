@@ -1,10 +1,12 @@
 package com.gui;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.db.DbException;
 import com.model.entities.Client;
@@ -15,8 +17,8 @@ import com.model.entities.Guarantee;
 import com.services.ClientService;
 import com.services.ContractService;
 import com.services.EstateService;
-import com.utils.CpfCnpj;
 import com.utils.Currency;
+import com.utils.CustomContextMenu;
 import com.utils.Date;
 import com.utils.Icons;
 
@@ -38,33 +40,21 @@ public class NewContractFormController {
   private ClientService clientService;
   private EstateService estateService;
   private ContractListController contractController;
-
+  
   @FXML
   private ComboBox<String> tenantField;
-
+  
   @FXML
   private ComboBox<String> landlordField;
-
+  
   @FXML
   private ComboBox<String> estateField;
-
+  
   @FXML
-  private ComboBox<String> guaranteeType;
-
+  private TextField rentValueField;
+  
   @FXML
-  private TextField guarantorName;
-
-  @FXML
-  private TextField partnerName;
-
-  @FXML
-  private DatePicker rentBeginningField;
-
-  @FXML
-  private DatePicker rentEndField;
-
-  @FXML
-  private TextField rentValue;
+  private TextField depositField;
 
   @FXML
   private TextField energyConsumerUnit;
@@ -73,10 +63,22 @@ public class NewContractFormController {
   private TextField waterRegistrationNumber;
 
   @FXML
-  private TextField deposit;
+  private DatePicker rentBeginningField;
+
+  @FXML
+  private DatePicker rentEndField;
 
   @FXML
   private DatePicker contractSigningDateField;
+  
+  @FXML
+  private ComboBox<String> guaranteeType;
+
+  @FXML
+  private TextField guarantorName;
+
+  @FXML
+  private TextField partnerNameField;
 
   @FXML
   private Button saveButton;
@@ -86,10 +88,6 @@ public class NewContractFormController {
 
   private final Map<String, Guarantee.GuaranteeType> guaranteeTypeMap = 
     new HashMap<>();
-
-  private final Map<String, Integer> tenantMap = new HashMap<>();
-  private final Map<String, Integer> landlordMap = new HashMap<>();
-  private final Map<String, Integer> estateMap = new HashMap<>();
 
   public void setStage(Stage stage) {
     this.stage = stage;
@@ -112,34 +110,6 @@ public class NewContractFormController {
     this.contractController = controller;
   }
 
-  @FXML
-  private void initialize() {
-    if (contractService == null)
-      throw new IllegalStateException(
-        "ContractService was not initialized. " +
-        "Call setContractService() before loading the controller."
-      );
-
-    if (contractController != null) contractController.refreshTableData();
-
-    initializeGuaranteeTypeComboBox();
-    setupButtons();
-    populateEstateCombobox();
-    populateTenantAndLandlordFields();
-
-    // Apply double formatter to all relevant fields
-    applyDoubleFormatter(rentValue);
-    applyDoubleFormatter(deposit);
-
-    rentBeginningField.setConverter(Date.getDateConverter());
-    rentEndField.setConverter(Date.getDateConverter());
-    contractSigningDateField.setConverter(Date.getDateConverter());
-
-    Date.applyDateMaskOnInputFields(rentBeginningField);
-    Date.applyDateMaskOnInputFields(rentEndField);
-    Date.applyDateMaskOnInputFields(contractSigningDateField);
-  }
-
   private void initializeGuaranteeTypeComboBox() {
     guaranteeTypeMap.put("Caução", Guarantee.GuaranteeType.DEPOSIT);
     guaranteeTypeMap.put("Fiador", Guarantee.GuaranteeType.GUARANTOR);
@@ -160,59 +130,73 @@ public class NewContractFormController {
     cancelButton.setOnAction(event -> closeWindow());
   }
 
-  private void populateTenantAndLandlordFields() {
-    List<String> tenants = getClientNamesAndCpfOrCnpj(
-      clientService.findAllClients(), Client.ClientType.TENANT
-    );
-    tenantField.getItems().addAll(tenants);
+  private void populateComboboxes() {
+    Map<String, Integer> tenants = clientService.findAllClients().stream()
+      .filter(client -> client.getClientType().equals(ClientType.TENANT))
+      .sorted(Comparator.comparing(Client::getId))
+      .collect(Collectors.toMap(
+        client -> client.getName() + " - " + client.getCpfCnpj(),
+        Client::getId,
+        (existing, replacement) -> existing,
+        LinkedHashMap::new
+      ));
+
+    tenantField.getItems().addAll(tenants.keySet());
     tenantField.setPromptText("Locatário");
+    tenantField.setOnAction(e -> {
+      String selectedTenant = tenantField.getSelectionModel().getSelectedItem();
 
-    List<String> landlords = getClientNamesAndCpfOrCnpj(
-      clientService.findAllClients(), Client.ClientType.LANDLORD
-    );
-    landlordField.getItems().addAll(landlords);
-    landlordField.setPromptText("Locador");
+      if (selectedTenant != null) {
+        Integer tenantId = tenants.get(selectedTenant);
+        tenantField.setValue(selectedTenant);
+        tenantField.getProperties().put("tenantId", tenantId);
+      }
+    });
+
+    Map<String, Integer> landlords = clientService.findAllClients().stream()
+      .filter(client -> client.getClientType().equals(ClientType.LANDLORD))
+      .sorted(Comparator.comparing(Client::getId))
+      .collect(Collectors.toMap(
+        client -> client.getName() + " - " + client.getCpfCnpj(),
+        Client::getId,
+        (existing, replacement) -> existing,
+        LinkedHashMap::new
+      ));
+
+    landlordField.getItems().addAll(landlords.keySet());
+    landlordField.setPromptText("Locatário");
+    landlordField.setOnAction(e -> {
+      Integer landlordId =
+        landlords.get(landlordField.getSelectionModel().getSelectedItem());
+      landlordField.getProperties().put("landlordId", landlordId);
+
+      Map<String, Integer> estates = estateService
+        .getAllClientEstates(landlordId).stream()
+        .collect(Collectors.toMap(Estate::getAddress, Estate::getId));
+
+      estateField.getItems().setAll(estates.keySet());
+      estateField.setOnAction(ev -> {
+        String selectedEstate =
+          estateField.getSelectionModel().getSelectedItem();
+        estateField.getProperties()
+          .put("estateId", estates.get(selectedEstate));
+      });
+
+      if (!estates.isEmpty()) {
+        String firstEstate = estates.keySet().iterator().next();
+        estateField.setValue(firstEstate);
+        estateField.getProperties().put("estateId", estates.get(firstEstate));
+      }
+    });
+
+    estateField.setPromptText("Imóveis");
   }
 
-  private void populateEstateCombobox() {
-    List<String> estates = getEstates(estateService.findAllEstates());
-    estateField.getItems().addAll(estates);
-    estateField.setPromptText("Imóvel");
-  }
-  
   private void applyDoubleFormatter(TextField textField) {
     textField.setText("R$ ");
     textField.setTextFormatter(Currency.allowOnlyDigitsAndSeparators());
     // Set the caret position to the end of the initial text
     textField.positionCaret(textField.getText().length());
-  }
-
-  private List<String> getEstates(List<Estate> estates) {
-    List<String> filteredEstates = new ArrayList<>();
-    for (Estate estate : estates) {
-      String displayText = estate.getAddress();
-      filteredEstates.add(displayText);
-      estateMap.put(displayText, estate.getId());
-    }
-    return filteredEstates;
-  }
-
-  private List<String> getClientNamesAndCpfOrCnpj(
-    List<Client> clients, ClientType type
-  ) {
-    List<String> filteredClients = new ArrayList<>();
-    for (Client client : clients) {
-      if (client.getClientType() == type) {
-        String displayText = client.getName() + " - " +
-          CpfCnpj.applyCpfCnpjMaskFromDatabase(client.getCpfCnpj());
-        filteredClients.add(displayText);
-        if (type == ClientType.TENANT)
-          tenantMap.put(displayText, client.getId());
-        else if (type == ClientType.LANDLORD)
-          landlordMap.put(displayText, client.getId());
-      }
-    }
-    return filteredClients;
   }
 
   private void populateContractData(
@@ -224,10 +208,14 @@ public class NewContractFormController {
     contract.setEstate(estateId);
     contract.setRentBeginning(rentBeginning);
     contract.setRentEnd(rentEnd);
-    contract.setRentValue(Currency.parseMonetaryValue(rentValue.getText()));
+    contract.setRentValue(
+      Currency.parseMonetaryValue(rentValueField.getText())
+    );
     contract.setEnergyConsumerUnit(energyConsumerUnit.getText());
     contract.setWaterRegistrationNumber(waterRegistrationNumber.getText());
-    contract.setDepositValue(Currency.parseMonetaryValue(deposit.getText()));
+    contract.setDepositValue(
+      Currency.parseMonetaryValue(depositField.getText())
+    );
     contract.setContractSigningDate(contractSigningDate);
   }
 
@@ -245,7 +233,7 @@ public class NewContractFormController {
       return "Imóvel";
 
     // Validate monetary fields
-    if (rentValue.getText().replace("R$", "").trim().isEmpty())
+    if (rentValueField.getText().replace("R$", "").trim().isEmpty())
       return "Valor do aluguel";
     if (energyConsumerUnit.getText().trim().isEmpty())
       return "UC";
@@ -288,9 +276,10 @@ public class NewContractFormController {
     if (contract == null) contract = new Contract();
     if (guarantee == null) guarantee = new Guarantee();
 
-    Integer tenantId = tenantMap.get(tenantField.getValue());
-    Integer landlordId = landlordMap.get(landlordField.getValue());
-    Integer estateId = estateMap.get(estateField.getValue());
+    Integer tenantId = (Integer) tenantField.getProperties().get("tenantId");
+    Integer landlordId =
+      (Integer) landlordField.getProperties().get("landlordId");
+    Integer estateId = (Integer) estateField.getProperties().get("estateId");
     LocalDate rentBeginning = rentBeginningField.getValue();
     LocalDate rentEnd = rentEndField.getValue();
     LocalDate contractSigningDate = contractSigningDateField.getValue();
@@ -298,11 +287,13 @@ public class NewContractFormController {
     String validationError = validateInputs(
       tenantId, landlordId, estateId, rentBeginning,
       rentEnd, contractSigningDate, guaranteeType.getValue(),
-      deposit, guarantorName
+      depositField, guarantorName
     );
 
     if (validationError != null) {
-      Alerts.showAlert("Erro de Validação", validationError, null, AlertType.WARNING);
+      Alerts.showAlert(
+        "Erro de Validação", validationError, null, AlertType.WARNING
+      );
       return;
     }
 
@@ -316,7 +307,7 @@ public class NewContractFormController {
       guaranteeTypeMap.get(selectedGuaranteeType);
     guarantee.setGuaranteeType(guaranteeTypeEnum);
     guarantee.setGuarantorNames(
-      List.of(guarantorName.getText(), partnerName.getText())
+      List.of(guarantorName.getText(), partnerNameField.getText())
     );
     contract.setGuarantee(guarantee);
 
@@ -327,8 +318,81 @@ public class NewContractFormController {
       return;
     }
 
-    contractController.refreshTableData();
-    contractController.setupPagination();
+    contractController.setupPagination(
+      FXCollections.observableArrayList(contractService.getAllContracts())
+    );
     closeWindow();
+  }
+
+  @FXML
+  private void initialize() {
+    if (contractService == null)
+      throw new IllegalStateException(
+        "ContractService was not initialized. " +
+        "Call setContractService() before loading the controller."
+      );
+
+    // Apply double formatter to all relevant fields
+    applyDoubleFormatter(rentValueField);
+    applyDoubleFormatter(depositField);
+
+    Date.applyDateMaskOnInputFields(rentBeginningField);
+    Date.applyDateMaskOnInputFields(rentEndField);
+    Date.applyDateMaskOnInputFields(contractSigningDateField);
+
+    CustomContextMenu contextMenu = new CustomContextMenu();
+
+    rentValueField.focusedProperty().addListener(
+    (observable, oldValue, newValue) -> {
+      if (newValue)
+        contextMenu.setCustomContextMenuForTextFields(rentValueField);
+    });
+    depositField.focusedProperty().addListener(
+    (observable, oldValue, newValue) -> {
+      if (newValue)
+        contextMenu.setCustomContextMenuForTextFields(depositField);
+    });
+    energyConsumerUnit.focusedProperty().addListener(
+    (observable, oldValue, newValue) -> {
+      if (newValue)
+        contextMenu.setCustomContextMenuForTextFields(energyConsumerUnit);
+    });
+    waterRegistrationNumber.focusedProperty().addListener(
+    (observable, oldValue, newValue) -> {
+      if (newValue)
+        contextMenu.setCustomContextMenuForTextFields(waterRegistrationNumber);
+    });
+    rentBeginningField.getEditor().focusedProperty().addListener(
+    (observable, oldValue, newValue) -> {
+      if (newValue)
+        contextMenu
+          .setCustomContextMenuForTextFields(rentBeginningField.getEditor());
+    });
+    rentEndField.getEditor().focusedProperty().addListener(
+    (observable, oldValue, newValue) -> {
+      if (newValue)
+        contextMenu.setCustomContextMenuForTextFields(rentEndField.getEditor());
+    });
+    contractSigningDateField.getEditor().focusedProperty().addListener(
+    (observable, oldValue, newValue) -> {
+      if (newValue)
+        contextMenu.setCustomContextMenuForTextFields(
+          contractSigningDateField.getEditor()
+        );
+    });
+    guarantorName.focusedProperty().addListener(
+    (observable, oldValue, newValue) -> {
+      if (newValue)
+        contextMenu.setCustomContextMenuForTextFields(guarantorName);
+    });
+    partnerNameField.focusedProperty().addListener(
+    (observable, oldValue, newValue) -> {
+      if (newValue)
+        contextMenu.setCustomContextMenuForTextFields(partnerNameField);
+    });
+
+    initializeGuaranteeTypeComboBox();
+    setupButtons();
+    populateComboboxes();
   }
 }

@@ -7,6 +7,7 @@ public class Contract {
   private int id;
   private int tenant;
   private int landlord;
+  private int guarantor;
   private int estateId;
   private LocalDate rentBeginning;
   private LocalDate rentEnd;
@@ -21,15 +22,17 @@ public class Contract {
   public Contract() {}
 
   public Contract(
-    int id, int tenant, int landlord, int estateId, LocalDate rentBeginning,
-    LocalDate rentEnd, double rentValue, double depositValue,
-    Guarantee guarantee, String fileBase64, String energyConsumerUnit, 
-    String waterRegistrationNumber, LocalDate contractSigningDate
+    int id, int tenant, int landlord, int estateId, int guarantor,
+    LocalDate rentBeginning, LocalDate rentEnd, double rentValue,
+    double depositValue, Guarantee guarantee, String fileBase64,
+    String energyConsumerUnit, String waterRegistrationNumber,
+    LocalDate contractSigningDate
   ) {
     this.id = id;
     this.tenant = tenant;
     this.landlord = landlord;
     this.estateId = estateId;
+    this.guarantor = guarantor;
     this.rentBeginning = rentBeginning;
     this.rentEnd = rentEnd;
     this.rentValue = rentValue;
@@ -63,6 +66,14 @@ public class Contract {
 
   public void setLandlord(int landlord) {
     this.landlord = landlord;
+  }
+
+  public int getGuarantor() {
+    return guarantor;
+  }
+
+  public void setGuarantor(int guarantor) {
+    this.guarantor = guarantor;
   }
 
   public int getEstate() {

@@ -1,5 +1,6 @@
 package com.services;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import com.db.DbException;
@@ -8,6 +9,7 @@ import com.model.dao.ClientDao;
 import com.model.dao.DaoFactory;
 import com.model.entities.Client;
 
+import javafx.collections.ObservableList;
 import javafx.scene.control.Alert.AlertType;
 
 public class ClientService {
@@ -25,19 +27,19 @@ public class ClientService {
     return dao.findAllDao();  
   }
 
-  public void update(Client obj) {
-    dao.updateDao(obj);
+  public void update(int clientId, LinkedHashMap<String, Object> fieldsUpdated){
+    dao.updateDao(clientId, fieldsUpdated);
   }
 
-  public void delete(int id, boolean isLandlord, boolean usedGuarantor) {
-    dao.deleteByIdDao(id, isLandlord, usedGuarantor);
+  public void delete(int id, boolean isLandlord) {
+    dao.deleteByIdDao(id, isLandlord);
   }
 
-  public List<Client> search(String filter, String argument) {
+  public ObservableList<Client> search(String filter, String argument) {
     return dao.searchDao(filter, argument);
   }
 
-  public List<Client> findPaginated(int page, int pageSize) {
+  public ObservableList<Client> findPaginated(int page, int pageSize) {
     try {
       return dao.findPaginatedDao(page, pageSize);
     } catch (DbException e) {
@@ -45,36 +47,6 @@ public class ClientService {
       "Erro ao buscar ", e.getMessage(), null, AlertType.ERROR
       );
       throw e;
-    }
-  }
-
-  public List<String> getGuarantorsById(int id) {
-    try {
-      return dao.getGuarantorsById(id);
-    } catch (DbException e) {
-      throw new DbException(
-        "Error while retrieving guarantors for client: " + id, e
-      );
-    }
-  }
-
-  public String getGuaranteeTypeByContractId(int id) {
-    try {
-      return dao.getGuaranteeTypeByContractIdDao(id);
-    } catch (DbException e) {
-    	throw new DbException(
-    	  "Error while retrieving guarantee type for client: " + id, e
-      );
-    }
-  }
-
-  public double getDeposit(int contract) {
-    try {
-      return dao.getDeposit(contract);
-    } catch (DbException e) {
-    	throw new DbException(
-    	  "Error while retrieving deposit for client: " + contract, e
-      );
     }
   }
 

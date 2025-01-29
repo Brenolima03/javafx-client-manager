@@ -28,6 +28,9 @@ public class ViewController {
   @FXML
   private MenuItem commissionReport;
 
+  @FXML
+  private MenuItem test;
+
   public void setStage(Stage stage) {
   }
 
@@ -59,7 +62,7 @@ public class ViewController {
       currentStage.setTitle("Clientes");
       currentStage.show();
     } catch (IOException e) {
-      System.err.println(e.getMessage());
+      e.printStackTrace();
     }
   }
 

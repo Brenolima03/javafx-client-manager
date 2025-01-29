@@ -8,17 +8,16 @@ import com.model.entities.Client;
 import com.model.entities.Estate;
 import com.services.ClientService;
 import com.services.EstateService;
+import com.utils.ActionColumn;
+import com.utils.CustomContextMenu;
 import com.utils.Icons;
+import com.utils.TableCellConfiguration;
 
-import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert.AlertType;
@@ -30,13 +29,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.util.StringConverter;
 
 public class EstateListController {
   private int currentPage = 1;
@@ -48,13 +41,19 @@ public class EstateListController {
   private TableView<Estate> estateTable;
 
   @FXML
+  private TableColumn <Estate, String> updateDeleteColumn;
+
+  @FXML
   private TextField searchField;
 
   @FXML
   private Button searchButton;
 
   @FXML
-  private ComboBox <String> filtersCombobox;
+  private ComboBox <String> filterCombobox;
+
+  @FXML
+  private Label message;
 
   @FXML
   private Button addEstateButton;
@@ -86,12 +85,6 @@ public class EstateListController {
   @FXML
   private Pagination pagination;
 
-  private Stage currentStage;
-
-  public void setStage(Stage stage) {
-    this.currentStage = stage;
-  }
-
   public void setEstateService(EstateService estateService) {
     this.estateService = estateService;
   }
@@ -101,195 +94,90 @@ public class EstateListController {
   }
 
   private void setupFilterCombobox() {
-    filtersCombobox.setItems(
+    filterCombobox.setItems(
       FXCollections.observableArrayList(
         "Endereço", "Bairro", "Locador", "Valor do aluguel"
       )
     );
-    filtersCombobox.setValue("Endereço");
+    filterCombobox.setValue("Endereço");
   }
 
-  @FXML
-  public void openEstateList(ActionEvent event) {
-    if (currentStage == null) {
-      System.err.println(
-        "Error: Current stage is not set. Ensure setStage() is called."
-      );
-      return;
-    }
-
-    try {
-      VBox root = new VBox();
-      root.getChildren().add(new Label("Estate List View"));
-
-      if (pagination != null) {
-        root.getChildren().add(pagination);
-      }
-
-      Scene scene = new Scene(root);
-      currentStage.setScene(scene);
-      currentStage.show();
-    } catch (Exception e) {
-      System.err.println(e.getMessage());
-    }
+  private void handleUpdate(Estate estate) {
+    System.out.println("Opening the update form.");
   }
 
-  private ObservableList <Estate> getEstateData(int page) {
-    try {
-      return FXCollections.observableArrayList(
-        estateService.findPaginated(page, pageSize)
-      );
-    } catch (Exception e) {
-      return FXCollections.observableArrayList();
-    }
+  public void refreshTableData(ObservableList<Estate> estateList) {
+    estateTable.getItems().clear();
+    estateTable.setItems(estateList);
+    ActionColumn actionColumn = new ActionColumn();
+
+    actionColumn.setupActionColumn(
+      (TableColumn<Estate, String>) estateTable.getColumns().get(8),
+      event -> {
+        // Get the cell containing the button, then get the row from the cell
+        TableCell<Estate, String> cell =
+          (TableCell<Estate, String>) ((Button) event.getSource())
+            .getParent().getParent();
+
+        Estate estate = cell.getTableRow().getItem();
+        estateTable.getSelectionModel().select(estate);
+        handleUpdate(estate);
+      },
+      event -> {},
+      false
+    );
   }
 
-  public void refreshTableData() {
-    estateTable.setItems(getEstateData(currentPage));
-  }
-
-  public void setupPagination() {
-    int totalEstates = estateService.count();
+  public void setupPagination(ObservableList<Estate> clientList) {
+    int totalEstates = clientList.size();
     int pageCount = (totalEstates + pageSize - 1) / pageSize;
 
     pagination.setPageCount(pageCount);
-    // Show pagination only if more than one page
     pagination.setVisible(pageCount > 1);
     pagination.setCurrentPageIndex(currentPage - 1);
-    // Display 5 pages at once
     pagination.setMaxPageIndicatorCount(5);
+
     // Set up the page factory to update the table based on selected page
     pagination.setPageFactory(pageIndex -> {
       currentPage = pageIndex + 1;
-      refreshTableData();
+
+      // Calculate the sublist for the current page
+      int fromIndex = (currentPage - 1) * pageSize;
+      int toIndex = Math.min(fromIndex + pageSize, totalEstates);
+      List<Estate> estatesForPage = clientList.subList(fromIndex, toIndex);
+
+      refreshTableData(FXCollections.observableArrayList(estatesForPage));
       return new Label("");
     });
   }
 
-  private <T> void setupCell(TableColumn <Estate, T> column, double width) {
-    column.setPrefWidth(width);
-    column.setCellFactory(param -> new TableCell <> () {
-      private final TextField textField = new TextField();
-      {
-        textField.setStyle(
-          "-fx-background-color: transparent; -fx-alignment: center-left;"
-        );
-      }
-    });
-  }
-
-  private void blockTypingExceptCtrlC(Node node) {
-    node.addEventFilter(KeyEvent.ANY, event -> {
-      if (!(event.isControlDown() && event.getCode() == KeyCode.C))
-        event.consume();
-    });
-  }
-
-  private void setupButton(
-    Button button, String path,
-    EventHandler <ActionEvent> event, boolean isTransparent
-  ) {
-    Icons.setButtonIcon(button, path);
-    button.setPrefWidth(38);
-    button.setPrefHeight(38);
-    button.setOnAction(event);
-    if (isTransparent)
-      button.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
-  }
-
-  private <T> void configureNonEditableColumn(
-    TableColumn <Estate, T> column,
-    String property
-  ) {
-    column.setCellValueFactory(new PropertyValueFactory <> (property));
-    column.setCellFactory(tc -> {
-      TextFieldTableCell <Estate, T > cell =
-      new TextFieldTableCell <> (new StringConverter <T> () {
-        @Override
-        public String toString(T object) {
-          return object == null ? "" : object.toString();
-        }
-
-        @Override
-        public T fromString(String string) {
-          return null;
-        }
-      });
-
-      blockTypingExceptCtrlC(cell);
-
-      return cell;
-    });
-  }
-
-  private void configureColumn() {
-    configureNonEditableColumn(addressColumn, "address");
-    configureNonEditableColumn(numberColumn, "number");
-    configureNonEditableColumn(neighborhoodColumn, "neighborhood");
-    configureNonEditableColumn(cityColumn, "city");
-    configureNonEditableColumn(stateColumn, "state");
-    configureNonEditableColumn(tenantColumn, "tenantId");
-    configureNonEditableColumn(landlordColumn, "landlordId");
-    configureNonEditableColumn(descriptionColumn, "description");
-
-    tenantColumn.setCellValueFactory(col -> {
-      int tenantId = col.getValue().getTenantId();
-      Client tenantObj = clientService.findClientById(tenantId);
-      String tenant = (tenantObj != null) ? tenantObj.getName() : "";
-      return new SimpleStringProperty(tenant);
-    });
-
-    landlordColumn.setCellValueFactory(col -> {
-      int landlordId = col.getValue().getLandlordId();
-      Client landlordObj = clientService.findClientById(landlordId);
-      String landlord = landlordObj.getName();
-      return new SimpleStringProperty(landlord);
-    });
-  }
-
-  private void searchEstates() {
-    String filter = filtersCombobox.getSelectionModel().getSelectedItem();
-    String searchText = searchField.getText().trim();
+  private void handleSearch() {
+    String filter = filterCombobox.getSelectionModel().getSelectedItem();
+    String argument = searchField.getText().trim().replaceAll("[()\\-./]", "");
 
     if (filter == null || filter.isEmpty()) {
       Alerts.showAlert(
-        null, "Selecione o filtro apropriado.",
-        null, AlertType.ERROR
-      );
+        null, "Selecione o filtro apropriado.", null, AlertType.ERROR)
+      ;
       return;
     }
 
     try {
-      List <Estate> estates =
-        searchText.isEmpty() ?
-        estateService.findPaginated(currentPage = 1, pageSize) :
-        estateService.search(filter, searchText);
+      List<Estate> estates = argument.isEmpty() 
+        ? estateService.findAllEstates() 
+        : estateService.search(filter, argument);
 
       if (estates == null || estates.isEmpty()) {
         Alerts.showAlert(
-          null, "Nenhum imóvel encontrado",
-          null, AlertType.ERROR
+          null, "Nenhum imóvel encontrado", null, AlertType.ERROR
         );
-        return;
+        estates = estateService.findAllEstates();
       }
 
-      int totalEstates = searchText.isEmpty() ?
-        estateService.count() : estates.size();
-      int pageCount = (totalEstates + pageSize - 1) / pageSize;
-
-      pagination.setPageCount(pageCount);
-      pagination.setVisible(pageCount > 1);
-      pagination.setCurrentPageIndex(Math.min(currentPage, pageCount) - 1);
-
-      estateTable.getSortOrder().clear();
-      Platform.runLater(() -> {
-        estateTable.getItems().setAll(estates);
-      });
-
+      setupPagination(FXCollections.observableArrayList(estates));
+      searchField.clear();
     } catch (DbException e) {
-      Alerts.showAlert(
-        "Erro ao buscar ", e.getMessage(), null, AlertType.ERROR
-      );
+      Alerts.showAlert("Erro ao buscar", e.getMessage(), null, AlertType.ERROR);
     }
   }
 
@@ -326,8 +214,6 @@ public class EstateListController {
       newEstateStage.setScene(new Scene(root));
       newEstateStage.setWidth(640);
       newEstateStage.setHeight(580);
-
-      // Show the new Estate form stage
       newEstateStage.show();
       newEstateStage.setResizable(false);
     } catch (IOException e) {
@@ -338,6 +224,64 @@ public class EstateListController {
     }
   }
 
+  private void populateCells(
+    CustomContextMenu contextMenu, TableCellConfiguration tableCellConfig
+  ) {
+    tableCellConfig.configureCellFactory(
+      addressColumn, 225, "address", contextMenu
+    );
+
+    tableCellConfig.configureCellFactory(
+      numberColumn, 225, "number", contextMenu
+    );
+
+    tableCellConfig.configureCellFactory(
+      neighborhoodColumn, 225, "neighborhood", contextMenu
+    );
+
+    tableCellConfig.configureCellFactory(
+      cityColumn, 225, "city", contextMenu
+    );
+
+    tableCellConfig.configureCellFactory(
+      stateColumn, 140, "state", contextMenu
+    );
+
+    tableCellConfig.configureCellFactory(
+      tenantColumn, 225, "tenantId", contextMenu
+    );
+
+    tableCellConfig.configureCellFactory(
+      landlordColumn, 225, "landlordId", contextMenu
+    );
+
+    tableCellConfig.configureCellFactory(
+      descriptionColumn, 220, "description", contextMenu
+    );
+
+    tenantColumn.setCellValueFactory(cellData -> {
+      Integer tenantId = cellData.getValue().getTenantId();
+      if (tenantId == null || tenantId == 0)
+        return new SimpleStringProperty("");
+
+      Client tenantObj = clientService.findClientById(tenantId);
+      return new SimpleStringProperty(
+        tenantObj != null ? tenantObj.getName() : ""
+      );
+    });
+
+    landlordColumn.setCellValueFactory(cellData -> {
+      Integer landlordId = cellData.getValue().getLandlordId();
+      if (landlordId == null || landlordId == 0)
+        return new SimpleStringProperty("");
+
+      Client landlordObj = clientService.findClientById(landlordId);
+      return new SimpleStringProperty(
+        landlordObj != null ? landlordObj.getName() : ""
+      );
+    });
+  }
+
   public void initialize() {
     try {
       if (estateService == null)
@@ -346,31 +290,32 @@ public class EstateListController {
           "Call setEstateService() before loading the controller."
         );
 
+      Icons.setupTransparentButton(
+        searchButton, "icons/search-icon.png",
+        event -> handleSearch()
+      );
+      Icons.setupTransparentButton(
+        addEstateButton, "icons/add-icon.png",
+        event -> openNewEstateForm()
+      );
+
       estateTable.setPlaceholder(new Label("Não há imóveis cadastrados"));
 
+      CustomContextMenu contextMenu = new CustomContextMenu();
+      TableCellConfiguration tableCellConfig = new TableCellConfiguration();
+
+      searchField.focusedProperty().addListener(
+      (observable, oldValue, newValue) -> {
+        if (newValue)
+          contextMenu.setCustomContextMenuForTextFields(searchField);
+      });
+      contextMenu.setCustomContextMenuForTextFields(searchField);
+
       setupFilterCombobox();
-
-      setupButton(
-        searchButton, "icons/search-icon.png",
-        event -> searchEstates(), false
+      setupPagination(
+        FXCollections.observableArrayList(estateService.findAllEstates())
       );
-      setupButton(
-        addEstateButton, "icons/add-icon.png",
-        event -> openNewEstateForm(), false
-      );
-      setupPagination();
-      setupCell(addressColumn, 225);
-      setupCell(numberColumn, 225);
-      setupCell(neighborhoodColumn, 225);
-
-      setupCell(cityColumn, 225);
-      setupCell(stateColumn, 225);
-      setupCell(tenantColumn, 225);
-
-      setupCell(landlordColumn, 225);
-      setupCell(descriptionColumn, 220);
-
-      configureColumn();
+      populateCells(contextMenu, tableCellConfig);
     } catch (IllegalStateException e) {
       Alerts.showAlert(
         "Erro ao abrir página ",

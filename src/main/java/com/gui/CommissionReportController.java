@@ -1,6 +1,6 @@
 package com.gui;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.model.entities.Client;
@@ -81,11 +81,10 @@ public class CommissionReportController {
   private void loadRentAndCommission() {
     try {
       var contracts = contractService.getAllContracts();
-      if (contracts == null)
-        return;
+      if (contracts == null) return;
 
       double totalCommission = 0.0;
-      HashMap<String, String> map = new HashMap<>();
+      LinkedHashMap<String, String> map = new LinkedHashMap<>();
 
       for (var contract : contracts) {
         double rentValue = contract.getRentValue();
@@ -102,7 +101,7 @@ public class CommissionReportController {
       map.put(
         "Total", Currency.getCurrencyConverter().toString(totalCommission)
       );
-  
+
       // Convert the map entries to an observable list
       ObservableList<Map.Entry<String, String>> data =
         FXCollections.observableArrayList(map.entrySet());
@@ -115,7 +114,7 @@ public class CommissionReportController {
 
   @FXML
   private void handleGenerateExcelReport() {
-    Map<String, String> commissionData = new HashMap<>();
+    Map<String, String> commissionData = new LinkedHashMap<>();
 
     for (Map.Entry<String, String> entry : commissionTable.getItems())
       commissionData.put(entry.getKey(), entry.getValue());

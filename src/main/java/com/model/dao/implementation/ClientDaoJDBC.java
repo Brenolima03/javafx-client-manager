@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +17,9 @@ import com.model.dao.ClientDao;
 import com.model.entities.Client;
 import com.model.entities.Client.ClientType;
 import com.model.entities.Client.MaritalStatus;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 public class ClientDaoJDBC implements ClientDao {
   private Connection conn;
@@ -79,6 +83,23 @@ public class ClientDaoJDBC implements ClientDao {
     }
   }
 
+  private List<Integer> getContracts(int clientId) {
+    String sql = "SELECT CONTRACT_ID FROM CLIENT_CONTRACT WHERE CLIENT_ID = ?";
+    List<Integer> contracts = new ArrayList<>();
+
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setInt(1, clientId);
+      ResultSet rs = ps.executeQuery();
+
+      while (rs.next()) {
+        contracts.add(rs.getInt("CONTRACT_ID"));
+      }
+    } catch (SQLException e) {
+      throw new DbException(e.getMessage());
+    }
+    return contracts;
+  }
+
   @Override
   public Client findClientByIdDao(int id) {
     String sql = """
@@ -119,11 +140,11 @@ public class ClientDaoJDBC implements ClientDao {
         String state = rs.getString("STATE");
         String zip = rs.getString("ZIP");
 
-        int contract = getContractIdByClientId(id);
+        List<Integer> contracts = getContracts(clientId);
 
         return new Client(
-          clientId, name, cpfCnpj, rg, issuingOrganization, birthDate, contract,
-          telephone, clientType, maritalStatus, address, nationality,
+          clientId, name, cpfCnpj, contracts, rg, issuingOrganization,
+          birthDate, telephone, clientType, maritalStatus, address, nationality,
           profession, neighborhood, city, state, zip
         );
       }
@@ -131,29 +152,76 @@ public class ClientDaoJDBC implements ClientDao {
     } catch (SQLException e) {
       throw new DbException(e.getMessage());
     }
-  }  
+  }
 
   @Override
-  public void updateDao(Client obj) {
+  public void updateDao(
+    int clientId, LinkedHashMap<String, Object> fieldsUpdated
+  ) {
     PreparedStatement st = null;
+
     try {
-      String sql = "UPDATE CLIENTS SET NAME = ?, TELEPHONE = ? WHERE ID = ?";
-      st = conn.prepareStatement(sql);
-      st.setString(1, obj.getName());
-      st.setString(2, obj.getTelephone());
-      st.setInt(3, obj.getId());
+      // Start building the SQL query dynamically based on updated fields
+      StringBuilder sql = new StringBuilder("UPDATE CLIENTS SET ");
+
+      int i = 0;
+      for (String field : fieldsUpdated.keySet()) {
+        switch (field) {
+          case "name":
+            sql.append("NAME = ?");
+            break;
+          case "telephone":
+            sql.append("TELEPHONE = ?");
+            break;
+          case "maritalStatus":
+            sql.append("MARITAL_STATUS = ?");
+            break;
+          case "address":
+            sql.append("ADDRESS = ?");
+            break;
+          case "profession":
+            sql.append("PROFESSION = ?");
+            break;
+          case "neighborhood":
+            sql.append("NEIGHBORHOOD = ?");
+            break;
+          case "city":
+            sql.append("CITY = ?");
+            break;
+          case "state":
+            sql.append("STATE = ?");
+            break;
+          default:
+            throw new IllegalArgumentException("Unknown field: " + field);
+        }
+
+        // Append comma for all fields except the last one
+        if (i < fieldsUpdated.size() - 1)
+          sql.append(", ");
+
+        i++;
+      }
+
+      sql.append(" WHERE ID = ?");
+      st = conn.prepareStatement(sql.toString());
+
+      // Set the field values dynamically
+      i = 1;
+      for (Object value : fieldsUpdated.values()) {
+        st.setObject(i++, value); // Set each field's value
+      }
+
+      st.setInt(i, clientId);
       st.executeUpdate();
     } catch (SQLException e) {
-      throw new DbException(
-        "Erro ao atualizar o cliente para o ID: " + obj.getId(), e
-      );
+      throw new DbException("Error updating client with ID: " + clientId, e);
     } finally {
       DB.closeStatement(st);
     }
   }
 
   @Override
-  public void deleteByIdDao(int id, boolean isLandlord, boolean usedGuarantor) {
+  public void deleteByIdDao(int id, boolean isLandlord) {
     PreparedStatement st = null;
     try {
       st = conn.prepareStatement(
@@ -164,13 +232,10 @@ public class ClientDaoJDBC implements ClientDao {
       st.executeUpdate();
       DB.closeStatement(st);
 
-      if (usedGuarantor) {
-        st =
-          conn.prepareStatement("DELETE FROM GUARANTORS WHERE TENANT_ID = ?");
-        st.setInt(1, id);
-        st.executeUpdate();
-        DB.closeStatement(st);
-      }
+      st = conn.prepareStatement("DELETE FROM GUARANTORS WHERE TENANT_ID = ?");
+      st.setInt(1, id);
+      st.executeUpdate();
+      DB.closeStatement(st);
 
       if (isLandlord) {
         st = conn.prepareStatement("DELETE FROM ESTATES WHERE LANDLORD_ID = ?");
@@ -212,11 +277,7 @@ public class ClientDaoJDBC implements ClientDao {
     ) {
 
       while (rs.next()) {
-        Client client = new Client();
-        client.setId(rs.getInt("ID"));
-        client.setName(rs.getString("NAME"));
-        client.setCpfCnpj(rs.getString("CPF_CNPJ"));
-        client.setClientType(ClientType.valueOf(rs.getString("CLIENT_TYPE")));
+        Client client = instantiateClientDao(rs);
         clients.add(client);
       }
     } catch (SQLException e) {
@@ -226,7 +287,7 @@ public class ClientDaoJDBC implements ClientDao {
   }
 
   @Override
-  public List<Client> searchDao(String filter, String argument) {
+  public ObservableList<Client> searchDao(String filter, String argument) {
     PreparedStatement st = null;
     ResultSet rs = null;
     try {      
@@ -234,12 +295,15 @@ public class ClientDaoJDBC implements ClientDao {
       StringBuilder sql =
         new StringBuilder("SELECT DISTINCT C.* FROM CLIENTS c");
 
-      if (filter != null && !filter.isEmpty() && argument != null
-          && !argument.isEmpty()) {
+      if (filter != null && !argument.isEmpty()) {
         switch (filter) {
           case "Nome" -> sql.append(" WHERE C.NAME LIKE ?");
-          case "CPF | CNPJ" -> sql.append(" WHERE C.CPF_CNPJ LIKE ?");
-          case "Telefone" -> sql.append(" WHERE C.TELEPHONE LIKE ?");
+          case "CPF | CNPJ" ->
+            sql.append(" WHERE C.CPF_CNPJ LIKE ?");
+          case "RG" ->
+            sql.append(" WHERE C.RG LIKE ?");
+          case "Telefone" ->
+            sql.append(" WHERE C.TELEPHONE LIKE ?");
           case "Contrato" -> sql.append(
             " JOIN CONTRACTS CT ON C.ID = CT.TENANT_ID OR " +
             "C.ID = CT.LANDLORD_ID WHERE CT.ID LIKE ?"
@@ -247,14 +311,13 @@ public class ClientDaoJDBC implements ClientDao {
           case "Tipo" -> {
             sql.append(" WHERE C.CLIENT_TYPE LIKE ?");
             argument = mapClientTypeToDb(argument);
-            }
+          }
           default -> throw new DbException(
             "Filtro inválido: " + filter
           );
         }
       }
       st = conn.prepareStatement(sql.toString());
-
       if (argument != null && !argument.isEmpty()) {
         String searchPattern = "%" + argument + "%";
         st.setString(paramIndex++, searchPattern);
@@ -262,7 +325,7 @@ public class ClientDaoJDBC implements ClientDao {
 
       rs = st.executeQuery();
 
-      List<Client> list = new ArrayList<>();
+      ObservableList<Client> list = FXCollections.observableArrayList();
       // Convert ResultSet to Client object
       while (rs.next()) list.add(instantiateClientDao(rs));
 
@@ -286,21 +349,21 @@ public class ClientDaoJDBC implements ClientDao {
     );
     
     String result = clientTypeMap.get(clientType);
-    if (result == null) {
+    if (result == null)
       throw new DbException("Tipo " + clientType + " é inválido");
-    }
+
     return result;
   }
 
   @Override
-  public List<Client> findPaginatedDao(int page, int pageSize) {
+  public ObservableList<Client> findPaginatedDao(int page, int pageSize) {
     try (PreparedStatement ps = conn.prepareStatement(
       "SELECT * FROM CLIENTS LIMIT ? OFFSET ?"
     )) {
       ps.setInt(1, pageSize);
       ps.setInt(2, (page - 1) * pageSize);
 
-      List<Client> clients = new ArrayList<>();
+      ObservableList<Client> clients = FXCollections.observableArrayList();
       ResultSet rs = ps.executeQuery();
 
       while (rs.next()) {
@@ -314,97 +377,16 @@ public class ClientDaoJDBC implements ClientDao {
     }
   }
 
-  @Override
-  public List<String> getGuarantorsById(int id) throws DbException {
-    String sql = """
-      SELECT G.GUARANTOR_NAME AS GUARANTOR_NAME, G.PARTNER_NAME,
-      G.IS_SPONSOR_MARRIED
-      FROM GUARANTORS G
-      JOIN CONTRACTS C ON C.GUARANTOR_ID = G.ID
-      WHERE C.ID = ?
-    """;
-
-    List<String> guarantors = new ArrayList<>();
-
-    try (PreparedStatement st = conn.prepareStatement(sql)) {
-      st.setInt(1, id);
-
-      try (ResultSet rs = st.executeQuery()) {
-        while (rs.next()) {
-          String guarantorName = rs.getString("GUARANTOR_NAME");
-          if (guarantorName != null && !guarantorName.isBlank())
-            guarantors.add(guarantorName);
-
-          if (rs.getBoolean("IS_SPONSOR_MARRIED")) {
-            String partnerName = rs.getString("PARTNER_NAME");
-            if (partnerName != null && !partnerName.isBlank()) {
-              guarantors.add(partnerName);
-            }
-          }
-        }
-      }
-    } catch (SQLException e) {
-      throw new DbException("Erro ao buscar fiador para o ID: " + id, e);
-    }
-
-    return guarantors;
-  }
-
-  @Override
-  public String getGuaranteeTypeByContractIdDao(int id) {
-    String sql = """
-      SELECT C.GUARANTEE_TYPE
-      FROM CONTRACTS C
-      JOIN CLIENTS CL ON CL.ID = C.TENANT_ID
-      WHERE C.ID = ?
-    """;
-    
-    String guaranteeType = null;
-
-    try (PreparedStatement statement = conn.prepareStatement(sql)) {
-      statement.setInt(1, id);
-
-      try (ResultSet resultSet = statement.executeQuery()) {
-        if (resultSet.next())
-          guaranteeType = resultSet.getString("GUARANTEE_TYPE");
-      }
-    } catch (SQLException e) {}
-
-    return guaranteeType;
-  }
-
-  @Override
-  public double getDeposit(int contract) {
-    String sql = """
-      SELECT C.DEPOSIT 
-      FROM CONTRACTS C 
-      JOIN CLIENTS CL ON CL.ID = C.TENANT_ID
-      WHERE C.ID = ?
-    """;
-
-    try (PreparedStatement statement = conn.prepareStatement(sql)) {
-      statement.setInt(1, contract);
-      try (ResultSet resultSet = statement.executeQuery()) {
-        if (resultSet.next()) return resultSet.getDouble("DEPOSIT");
-      }
-    } catch (SQLException e) {
-      System.err.println(e.getMessage());
-    }
-    return 0;
-  }
-
   private Client instantiateClientDao(ResultSet rs) throws SQLException {
-    int id = rs.getInt("id");
+    int clientId = rs.getInt("id");
     String name = rs.getString("NAME");
     String cpfCnpj = rs.getString("CPF_CNPJ");
+    String rg = rs.getString("RG");
+    String issuingOrganization = rs.getString("ISSUING_ORGANIZATION");
     LocalDate birthDate = rs.getDate("BIRTH_DATE") != null 
       ? rs.getDate("BIRTH_DATE").toLocalDate() 
       : null;
     String telephone = rs.getString("TELEPHONE");
-
-    String clientTypeStr = rs.getString("CLIENT_TYPE");
-    Client.ClientType clientType =
-      Client.ClientType.valueOf(clientTypeStr.toUpperCase());
 
     String maritalStatusStr = rs.getString("MARITAL_STATUS");
     MaritalStatus maritalStatus = maritalStatusStr != null
@@ -419,43 +401,18 @@ public class ClientDaoJDBC implements ClientDao {
     String state = rs.getString("STATE");
     String zip = rs.getString("ZIP");
 
-    int contractID = getContractIdByClientId(id);
+    ClientType clientType = null;
+    String clientTypeStr = rs.getString("CLIENT_TYPE");    
+    clientType = ClientType.valueOf(clientTypeStr);
+    List<Integer> contracts = getContracts(clientId);
 
     // Return the Client object
     return new Client(
-      id, name, cpfCnpj, null, null, 
-      birthDate, contractID, telephone, 
+      clientId, name, cpfCnpj, contracts, rg, issuingOrganization, 
+      birthDate, telephone, 
       clientType, maritalStatus, address,
       nationality, profession, neighborhood, 
       city, state, zip
     );
-  }
-
-  private int getContractIdByClientId(int clientId) throws SQLException {
-    PreparedStatement st = null;
-    ResultSet rs = null;
-    int contractId = 0;
-
-    try {
-      st = conn.prepareStatement(
-        "SELECT ID FROM CONTRACTS " +
-        "WHERE TENANT_ID = ? OR LANDLORD_ID = ?"
-      );
-      st.setInt(1, clientId);
-      st.setInt(2, clientId);
-      rs = st.executeQuery();
-
-      if (rs.next()) {
-        contractId = rs.getInt("ID");
-      }
-    } catch (SQLException e) {
-      throw new SQLException(
-        "Error retrieving contract ID for client ID: " + clientId, e
-      );
-    } finally {
-      DB.closeStatement(st);
-      DB.closeResultSet(rs);
-    }
-    return contractId;
   }
 }

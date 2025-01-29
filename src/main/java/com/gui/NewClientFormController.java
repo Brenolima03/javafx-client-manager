@@ -8,11 +8,13 @@ import com.model.entities.Client.ClientType;
 import com.model.entities.Client.MaritalStatus;
 import com.services.ClientService;
 import com.utils.CpfCnpj;
+import com.utils.CustomContextMenu;
 import com.utils.Date;
 import com.utils.Icons;
 import com.utils.States;
 import com.utils.TelephoneMask;
 
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -100,79 +102,28 @@ public class NewClientFormController {
     this.clientListController = clientListController;
   }
 
-  @FXML
-  private void initialize() {
-    if (clientService == null)
-      throw new IllegalStateException(
-        "ClientService was not initialized. " +
-        "Call setClientService() before loading the controller."
-      );
-
-    typeComboBox.getItems().addAll("Locador", "Locatário");
-    typeComboBox.setValue("Locador");
-
-    maritalStatusComboBox.getItems().addAll(
-      "solteiro(a)", "casado(a)", "divorciado(a)", "viúvo(a)"
-    );
-    maritalStatusComboBox.setValue("solteiro(a)");
-
-    TelephoneMask.applyTelephoneMask(telephoneField);
-
-    cpfCnpjField.setPromptText("XXX.XXX.XXX-XX");
-
-    ToggleGroup cpfCnpjToggleGroup = new ToggleGroup();
-    cpfRadioButton.setToggleGroup(cpfCnpjToggleGroup);
-    cnpjRadioButton.setToggleGroup(cpfCnpjToggleGroup);
-
-    cpfRadioButton.setOnAction(
-      event -> CpfCnpj.updateCpfCnpjMask(cpfRadioButton, cpfCnpjField)
-    );
-    cnpjRadioButton.setOnAction(
-      event -> CpfCnpj.updateCpfCnpjMask(cnpjRadioButton, cpfCnpjField)
-    );
-
-    CpfCnpj.applyCpfCnpjMaskOnInputFields(
-      cpfCnpjField, cpfRadioButton, cnpjRadioButton
-    );
-    
-    States.populateStateCombobox(stateCombobox);
-
-    stateCombobox.setValue("MS");
-
-    birthDateField.setConverter(Date.getDateConverter());
-    Date.applyDateMaskOnInputFields(birthDateField);
-
-    // Restrict zipField input to digits only and limit to 8 characters
-    zipField.textProperty().addListener((observable, oldValue, newValue) -> {
-      // Allow only digits
-      if (!newValue.matches("\\d*"))
-        zipField.setText(newValue.replaceAll("[^\\d]", ""));
-
-      // Limit input to 8 digits
-      if (zipField.getText().length() > 8)
-        zipField.setText(zipField.getText().substring(0, 8));
-    });
-
-    saveButton.setOnAction(event -> handleSave());
-    cancelButton.setOnAction(event -> closeWindow());
+  private void closeWindow() {
+    stage.close();
   }
 
   private void handleSave() {
-    String name = nameField.getText().replaceAll("\\d", "");
+    String name = nameField.getText().replaceAll("\\d", "").trim();
     String cpfCnpj = cpfCnpjField.getText();
-    String rg = rgField.getText();
+    String rg = rgField.getText().trim();
     String issuingOrganization =
-      issuingOrganizationField.getText().replaceAll("\\d", "");
-    String telephone = telephoneField.getText().replaceAll("\\D", "");
+      issuingOrganizationField.getText().replaceAll("\\d", "").trim();
+    String telephone = telephoneField.getText().replaceAll("\\D", "").trim();
     LocalDate birthDate = birthDateField.getValue();
     String selectedType = typeComboBox.getValue();
-    String nationality = nationalityField.getText().replaceAll("\\d", "");
-    String profession = professionField.getText().replaceAll("\\d", "");
-    String address = addressField.getText();
-    String neighborhood = neighborhoodField.getText().replaceAll("\\d", "");
-    String city = cityField.getText().replaceAll("\\d", "");
+    String nationality =
+      nationalityField.getText().replaceAll("\\d", "").trim();
+    String profession = professionField.getText().replaceAll("\\d", "").trim();
+    String address = addressField.getText().trim();
+    String neighborhood =
+      neighborhoodField.getText().replaceAll("\\d", "").trim();
+    String city = cityField.getText().replaceAll("\\d", "").trim();
     String state = stateCombobox.getValue();
-    String zip = zipField.getText();
+    String zip = zipField.getText().trim();
     String invalidField = null;
 
     if (name == null || name.trim().isEmpty()) {
@@ -256,13 +207,131 @@ public class NewClientFormController {
       clientService.insert(client);
       closeWindow();
     } catch (DbException e) {
-      Alerts.showAlert("Erro ao salvar ", e.getMessage(), null, AlertType.ERROR);
+      Alerts.showAlert("Erro ao salvar ", null, null, AlertType.ERROR);
     }
-    clientListController.refreshTableData();
-    clientListController.setupPagination();
+    clientListController.setupPagination(
+      FXCollections.observableArrayList(clientService.findAllClients())
+    );
   }  
 
-  private void closeWindow() {
-    stage.close();
+  @FXML
+  private void initialize() {
+    if (clientService == null)
+      throw new IllegalStateException(
+        "ClientService was not initialized. " +
+        "Call setClientService() before loading the controller."
+      );
+
+    typeComboBox.getItems().addAll("Locador", "Locatário");
+    typeComboBox.setValue("Locador");
+
+    maritalStatusComboBox.getItems().addAll(
+      "solteiro(a)", "casado(a)", "divorciado(a)", "viúvo(a)"
+    );
+    maritalStatusComboBox.setValue("solteiro(a)");
+
+    TelephoneMask.applyTelephoneMask(telephoneField);
+
+    cpfCnpjField.setPromptText("XXX.XXX.XXX-XX");
+
+    ToggleGroup cpfCnpjToggleGroup = new ToggleGroup();
+    cpfRadioButton.setToggleGroup(cpfCnpjToggleGroup);
+    cnpjRadioButton.setToggleGroup(cpfCnpjToggleGroup);
+
+    cpfRadioButton.setOnAction(
+      event -> CpfCnpj.updateCpfCnpjMask(cpfRadioButton, cpfCnpjField)
+    );
+    cnpjRadioButton.setOnAction(
+      event -> CpfCnpj.updateCpfCnpjMask(cnpjRadioButton, cpfCnpjField)
+    );
+
+    CpfCnpj.applyCpfCnpjMaskOnInputFields(
+      cpfCnpjField, cpfRadioButton, cnpjRadioButton
+    );
+
+    stateCombobox.setItems(
+      FXCollections.observableArrayList(States.getAllStates())
+    );
+    stateCombobox.setValue("MS");
+
+    Date.applyDateMaskOnInputFields(birthDateField);
+
+    // Restrict zipField input to digits only and limit to 8 characters
+    zipField.textProperty().addListener((observable, oldValue, newValue) -> {
+      // Allow only digits
+      if (!newValue.matches("\\d*"))
+        zipField.setText(newValue.replaceAll("[^\\d]", ""));
+
+      // Limit input to 8 digits
+      if (zipField.getText().length() > 8)
+        zipField.setText(zipField.getText().substring(0, 8));
+    });
+
+    CustomContextMenu contextMenu = new CustomContextMenu();
+
+    nameField.focusedProperty().addListener(
+    (observable, oldValue, newValue) -> {
+      if (newValue)
+        contextMenu.setCustomContextMenuForTextFields(nameField);
+    });
+    cpfCnpjField.focusedProperty().addListener(
+    (observable, oldValue, newValue) -> {
+      if (newValue)
+        contextMenu.setCustomContextMenuForTextFields(cpfCnpjField);
+    });
+    rgField.focusedProperty().addListener(
+    (observable, oldValue, newValue) -> {
+      if (newValue)
+        contextMenu.setCustomContextMenuForTextFields(rgField);
+    });
+    issuingOrganizationField.focusedProperty().addListener(
+    (observable, oldValue, newValue) -> {
+      if (newValue)
+        contextMenu.setCustomContextMenuForTextFields(issuingOrganizationField);
+    });
+    telephoneField.focusedProperty().addListener(
+    (observable, oldValue, newValue) -> {
+      if (newValue)
+        contextMenu.setCustomContextMenuForTextFields(telephoneField);
+    });
+    birthDateField.getEditor().focusedProperty().addListener(
+    (observable, oldValue, newValue) -> {
+      if (newValue)
+        contextMenu
+          .setCustomContextMenuForTextFields(birthDateField.getEditor());
+    });
+    nationalityField.focusedProperty().addListener(
+    (observable, oldValue, newValue) -> {
+      if (newValue)
+        contextMenu.setCustomContextMenuForTextFields(nationalityField);
+    });
+    professionField.focusedProperty().addListener(
+    (observable, oldValue, newValue) -> {
+      if (newValue)
+        contextMenu.setCustomContextMenuForTextFields(professionField);
+    });
+    addressField.focusedProperty().addListener(
+    (observable, oldValue, newValue) -> {
+      if (newValue)
+        contextMenu.setCustomContextMenuForTextFields(addressField);
+    });
+    neighborhoodField.focusedProperty().addListener(
+    (observable, oldValue, newValue) -> {
+      if (newValue)
+        contextMenu.setCustomContextMenuForTextFields(neighborhoodField);
+    });
+    cityField.focusedProperty().addListener(
+    (observable, oldValue, newValue) -> {
+      if (newValue)
+        contextMenu.setCustomContextMenuForTextFields(cityField);
+    });
+    zipField.focusedProperty().addListener(
+    (observable, oldValue, newValue) -> {
+      if (newValue)
+        contextMenu.setCustomContextMenuForTextFields(zipField);
+    });
+
+    saveButton.setOnAction(event -> handleSave());
+    cancelButton.setOnAction(event -> closeWindow());
   }
 }
