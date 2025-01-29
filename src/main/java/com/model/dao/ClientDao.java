@@ -13,7 +13,6 @@ public interface ClientDao {
   void deleteByIdDao(int id, boolean isLandlord);
   Client findClientByIdDao(int id);
   List<Client> findAllDao();
-  ObservableList<Client> findPaginatedDao(int page, int pageSize);
   ObservableList<Client> searchDao(String filter, String argument);
   int countDao();
 }

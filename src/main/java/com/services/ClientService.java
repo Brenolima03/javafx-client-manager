@@ -39,17 +39,6 @@ public class ClientService {
     return dao.searchDao(filter, argument);
   }
 
-  public ObservableList<Client> findPaginated(int page, int pageSize) {
-    try {
-      return dao.findPaginatedDao(page, pageSize);
-    } catch (DbException e) {
-      Alerts.showAlert(
-      "Erro ao buscar ", e.getMessage(), null, AlertType.ERROR
-      );
-      throw e;
-    }
-  }
-
   public int count() {
     return dao.countDao();
   }

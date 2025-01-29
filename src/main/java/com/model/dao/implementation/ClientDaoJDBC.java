@@ -355,28 +355,6 @@ public class ClientDaoJDBC implements ClientDao {
     return result;
   }
 
-  @Override
-  public ObservableList<Client> findPaginatedDao(int page, int pageSize) {
-    try (PreparedStatement ps = conn.prepareStatement(
-      "SELECT * FROM CLIENTS LIMIT ? OFFSET ?"
-    )) {
-      ps.setInt(1, pageSize);
-      ps.setInt(2, (page - 1) * pageSize);
-
-      ObservableList<Client> clients = FXCollections.observableArrayList();
-      ResultSet rs = ps.executeQuery();
-
-      while (rs.next()) {
-        Client client = instantiateClientDao(rs);
-        clients.add(client);
-      }
-      return clients;
-
-    } catch (SQLException e) {
-      throw new DbException(e.getMessage());
-    }
-  }
-
   private Client instantiateClientDao(ResultSet rs) throws SQLException {
     int clientId = rs.getInt("id");
     String name = rs.getString("NAME");
