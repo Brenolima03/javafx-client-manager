@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import com.db.DB;
@@ -115,20 +116,44 @@ public class EstateDaoJDBC implements EstateDao {
   }
 
   @Override
-  public void updateDao(Estate obj) {
-    PreparedStatement st = null;
-    try {
-      String sql = "UPDATE ESTATES SET DESCRIPTION = ? WHERE ID = ?";
-      st = conn.prepareStatement(sql);
-      st.setString(1, obj.getDescription());
-      st.setInt(2, obj.getId());
-      st.executeUpdate();
+  public void updateDao(
+    int estateId, LinkedHashMap<String, Object> fieldsUpdated
+  ) {
+    if (fieldsUpdated == null || fieldsUpdated.isEmpty())
+      throw new IllegalArgumentException("No fields provided for update.");
+
+    StringBuilder sql = new StringBuilder("UPDATE ESTATES SET ");
+    int i = 0;
+
+    for (String field : fieldsUpdated.keySet()) {
+      switch (field) {
+        case "description":
+          sql.append("DESCRIPTION = ?");
+          break;
+        default:
+          throw new IllegalArgumentException("Unknown field: " + field);
+      }
+
+      if (i < fieldsUpdated.size() - 1) 
+        sql.append(", ");
+
+      i++;
+    }
+
+    sql.append(" WHERE ID = ?");
+
+    try (PreparedStatement st = conn.prepareStatement(sql.toString())) {
+      i = 1;
+      for (Object value : fieldsUpdated.values())
+        st.setObject(i++, value);
+
+      st.setInt(i, estateId);
+      int rowsAffected = st.executeUpdate();
+
+      if (rowsAffected == 0)
+        throw new DbException("No client found with ID: " + estateId);
     } catch (SQLException e) {
-      throw new DbException(
-        "Erro ao atualizar o imóvel para o ID: " + obj.getId(), e
-      );
-    } finally {
-      DB.closeStatement(st);
+      throw new DbException("Error updating client with ID: " + estateId, e);
     }
   }
 

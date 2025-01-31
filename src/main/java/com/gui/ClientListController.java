@@ -105,8 +105,8 @@ public class ClientListController extends Main {
     this.clientService = clientService;
   }
 
-  private void handleUpdate(Client client) {
-    System.out.println("Opening the update form.");
+  private void handleUpdate(int clientId) {
+    openUpdateClientForm(clientId);
   }
 
   private void handleDelete(Client client) {
@@ -161,7 +161,7 @@ public class ClientListController extends Main {
 
         Client client = cell.getTableRow().getItem();
         clientTable.getSelectionModel().select(client);
-        handleUpdate(client);
+        handleUpdate(client.getId());
       },
       event -> {
         // Get the cell containing the button, then get the row from the cell
@@ -271,6 +271,48 @@ public class ClientListController extends Main {
     }
   }
 
+  private void openUpdateClientForm(int clientId) {
+    try {
+      FXMLLoader loader = new FXMLLoader(
+        getClass().getResource("/com/gui/UpdateClientForm.fxml")
+      );
+      
+      loader.setControllerFactory(controllerClass -> {
+        if (controllerClass == UpdateClientFormController.class) {
+          UpdateClientFormController controller = new UpdateClientFormController();
+          controller.setClientService(new ClientService());
+          controller.setClientListController(this);
+          controller.setClientId(clientId);
+          return controller;
+        }
+        try {
+          return controllerClass.getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+          System.err.println(e.getMessage());
+        }
+        return null;
+      });
+  
+      Parent root = loader.load();
+      UpdateClientFormController controller = loader.getController();
+      Stage updateClientStage = new Stage();
+      controller.setStage(updateClientStage);
+  
+      updateClientStage.setTitle("Atualizar cliente");
+      updateClientStage.setScene(new Scene(root));
+      updateClientStage.setWidth(640);
+      updateClientStage.setHeight(640);
+  
+      updateClientStage.show();
+      updateClientStage.setResizable(false);
+    } catch (IOException e) {
+      Alerts.showAlert(
+        "Erro", "Não foi possível abrir o formulário!",
+        e.getMessage(), AlertType.ERROR
+      );
+    }
+  }
+  
   private void populateCells(
     CustomContextMenu contextMenu, TableCellConfiguration tableCellConfig
   ) {

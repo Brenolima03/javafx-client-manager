@@ -17,6 +17,7 @@ import com.model.entities.Guarantee;
 import com.services.ClientService;
 import com.services.ContractService;
 import com.services.EstateService;
+import com.utils.CpfCnpj;
 import com.utils.Currency;
 import com.utils.CustomContextMenu;
 import com.utils.Date;
@@ -135,7 +136,8 @@ public class NewContractFormController {
       .filter(client -> client.getClientType().equals(ClientType.TENANT))
       .sorted(Comparator.comparing(Client::getId))
       .collect(Collectors.toMap(
-        client -> client.getName() + " - " + client.getCpfCnpj(),
+        client -> client.getName() + " - " +
+          CpfCnpj.applyCpfCnpjMaskFromDatabase(client.getCpfCnpj()),
         Client::getId,
         (existing, replacement) -> existing,
         LinkedHashMap::new
@@ -157,7 +159,8 @@ public class NewContractFormController {
       .filter(client -> client.getClientType().equals(ClientType.LANDLORD))
       .sorted(Comparator.comparing(Client::getId))
       .collect(Collectors.toMap(
-        client -> client.getName() + " - " + client.getCpfCnpj(),
+        client -> client.getName() + " - " +
+          CpfCnpj.applyCpfCnpjMaskFromDatabase(client.getCpfCnpj()),
         Client::getId,
         (existing, replacement) -> existing,
         LinkedHashMap::new

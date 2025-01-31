@@ -22,31 +22,31 @@
 
     <!-- Labels and Input Fields -->
     <Label text="Endereço:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-    <TextField fx:id="addressField" promptText="Digite o endereço"
+    <TextField fx:id="addressField" promptText="Digite o endereço" minWidth="350"
       GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
     <Label text="Número:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-    <TextField fx:id="numberField" promptText="Digite o número"
+    <TextField fx:id="numberField" promptText="Digite o número" minWidth="350"
       GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
     <Label text="Bairro:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-    <TextField fx:id="neighborhoodField" promptText="Digite o bairro"
+    <TextField fx:id="neighborhoodField" promptText="Digite o bairro" minWidth="350"
       GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
     <Label text="Cidade:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-    <TextField fx:id="cityField" promptText="Digite a cidade"
+    <TextField fx:id="cityField" promptText="Digite a cidade" minWidth="350"
       GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
     <Label text="Estado:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-    <ComboBox fx:id="stateComboBox" promptText="Selecione o estado"
+    <ComboBox fx:id="stateComboBox" promptText="Selecione o estado" minWidth="350"
       GridPane.columnIndex="1" GridPane.rowIndex="4" />
 
     <Label text="Locador:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
-    <ComboBox fx:id="landlordField"
+    <ComboBox fx:id="landlordField" minWidth="350"
       GridPane.columnIndex="1" GridPane.rowIndex="5" />
 
     <Label text="Descrição:" GridPane.columnIndex="0" GridPane.rowIndex="6" />
-    <TextField fx:id="descriptionField" promptText="Digite a descrição"
+    <TextField fx:id="descriptionField" promptText="Digite a descrição" minWidth="350"
       GridPane.columnIndex="1" GridPane.rowIndex="6" />
   </GridPane>
 

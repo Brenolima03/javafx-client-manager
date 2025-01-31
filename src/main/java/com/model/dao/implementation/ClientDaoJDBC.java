@@ -158,65 +158,62 @@ public class ClientDaoJDBC implements ClientDao {
   public void updateDao(
     int clientId, LinkedHashMap<String, Object> fieldsUpdated
   ) {
-    PreparedStatement st = null;
+    if (fieldsUpdated == null || fieldsUpdated.isEmpty())
+      throw new IllegalArgumentException("No fields provided for update.");
 
-    try {
-      // Start building the SQL query dynamically based on updated fields
-      StringBuilder sql = new StringBuilder("UPDATE CLIENTS SET ");
+    StringBuilder sql = new StringBuilder("UPDATE CLIENTS SET ");
+    int i = 0;
 
-      int i = 0;
-      for (String field : fieldsUpdated.keySet()) {
-        switch (field) {
-          case "name":
-            sql.append("NAME = ?");
-            break;
-          case "telephone":
-            sql.append("TELEPHONE = ?");
-            break;
-          case "maritalStatus":
-            sql.append("MARITAL_STATUS = ?");
-            break;
-          case "address":
-            sql.append("ADDRESS = ?");
-            break;
-          case "profession":
-            sql.append("PROFESSION = ?");
-            break;
-          case "neighborhood":
-            sql.append("NEIGHBORHOOD = ?");
-            break;
-          case "city":
-            sql.append("CITY = ?");
-            break;
-          case "state":
-            sql.append("STATE = ?");
-            break;
-          default:
-            throw new IllegalArgumentException("Unknown field: " + field);
-        }
-
-        // Append comma for all fields except the last one
-        if (i < fieldsUpdated.size() - 1)
-          sql.append(", ");
-
-        i++;
+    for (String field : fieldsUpdated.keySet()) {
+      switch (field) {
+        case "telephone":
+          sql.append("TELEPHONE = ?");
+          break;
+        case "maritalStatus":
+          sql.append("MARITAL_STATUS = ?");
+          break;
+        case "address":
+          sql.append("ADDRESS = ?");
+          break;
+        case "profession":
+          sql.append("PROFESSION = ?");
+          break;
+        case "neighborhood":
+          sql.append("NEIGHBORHOOD = ?");
+          break;
+        case "city":
+          sql.append("CITY = ?");
+          break;
+        case "state":
+          sql.append("STATE = ?");
+          break;
+        case "zip":
+          sql.append("ZIP = ?");
+          break;
+        default:
+          throw new IllegalArgumentException("Unknown field: " + field);
       }
 
-      sql.append(" WHERE ID = ?");
-      st = conn.prepareStatement(sql.toString());
+      if (i < fieldsUpdated.size() - 1) 
+        sql.append(", ");
 
-      // Set the field values dynamically
+      i++;
+    }
+
+    sql.append(" WHERE ID = ?");
+
+    try (PreparedStatement st = conn.prepareStatement(sql.toString())) {
       i = 1;
-      for (Object value : fieldsUpdated.values()) {
-        st.setObject(i++, value); // Set each field's value
-      }
+      for (Object value : fieldsUpdated.values())
+        st.setObject(i++, value);
 
       st.setInt(i, clientId);
-      st.executeUpdate();
+      int rowsAffected = st.executeUpdate();
+
+      if (rowsAffected == 0)
+        throw new DbException("No client found with ID: " + clientId);
     } catch (SQLException e) {
       throw new DbException("Error updating client with ID: " + clientId, e);
-    } finally {
-      DB.closeStatement(st);
     }
   }
 

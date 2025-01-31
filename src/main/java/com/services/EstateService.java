@@ -1,5 +1,6 @@
 package com.services;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import com.model.dao.DaoFactory;
@@ -17,8 +18,8 @@ public class EstateService {
     return dao.findAllEstatesDao();
   }
 
-  public void update(Estate obj) {
-    dao.updateDao(obj);
+  public void update(int estateId, LinkedHashMap<String, Object> fieldsUpdated){
+    dao.updateDao(estateId, fieldsUpdated);
   }
 
   public Estate findState(int id) {

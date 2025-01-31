@@ -212,7 +212,7 @@ public class NewClientFormController {
     clientListController.setupPagination(
       FXCollections.observableArrayList(clientService.findAllClients())
     );
-  }  
+  }
 
   @FXML
   private void initialize() {

@@ -102,8 +102,8 @@ public class EstateListController {
     filterCombobox.setValue("Endereço");
   }
 
-  private void handleUpdate(Estate estate) {
-    System.out.println("Opening the update form.");
+  private void handleUpdate(int estateId) {
+    openUpdateEstateForm(estateId);
   }
 
   public void refreshTableData(ObservableList<Estate> estateList) {
@@ -121,7 +121,7 @@ public class EstateListController {
 
         Estate estate = cell.getTableRow().getItem();
         estateTable.getSelectionModel().select(estate);
-        handleUpdate(estate);
+        handleUpdate(estate.getId());
       },
       event -> {},
       false
@@ -219,6 +219,49 @@ public class EstateListController {
     } catch (IOException e) {
       Alerts.showAlert(
         "Error", "Unable to load the form",
+        e.getMessage(), AlertType.ERROR
+      );
+    }
+  }
+
+  private void openUpdateEstateForm(int estateId) {
+    try {
+      FXMLLoader loader = new FXMLLoader(
+        getClass().getResource("/com/gui/UpdateEstateForm.fxml")
+      );
+      
+      loader.setControllerFactory(controllerClass -> {
+        if (controllerClass == UpdateEstateFormController.class) {
+          UpdateEstateFormController controller =
+            new UpdateEstateFormController();
+          controller.setEstateService(new EstateService());
+          controller.setEstateListController(this);
+          controller.setEstateId(estateId);
+          return controller;
+        }
+        try {
+          return controllerClass.getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+          System.err.println(e.getMessage());
+        }
+        return null;
+      });
+  
+      Parent root = loader.load();
+      UpdateEstateFormController controller = loader.getController();
+      Stage updateEstateStage = new Stage();
+      controller.setStage(updateEstateStage);
+  
+      updateEstateStage.setTitle("Atualizar imóvel");
+      updateEstateStage.setScene(new Scene(root));
+      updateEstateStage.setWidth(480);
+      updateEstateStage.setHeight(320);
+  
+      updateEstateStage.show();
+      updateEstateStage.setResizable(false);
+    } catch (IOException e) {
+      Alerts.showAlert(
+        "Erro", "Não foi possível abrir o formulário!",
         e.getMessage(), AlertType.ERROR
       );
     }

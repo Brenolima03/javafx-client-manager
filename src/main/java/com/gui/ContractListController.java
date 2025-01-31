@@ -340,7 +340,7 @@ public class ContractListController {
 
       newContractStage.setTitle("Adicionar contrato");
       newContractStage.setScene(new Scene(root));
-      newContractStage.setWidth(720);
+      newContractStage.setWidth(760);
       newContractStage.setHeight(920);
 
       // Show the new contract form stage
@@ -457,7 +457,18 @@ public class ContractListController {
         if (newValue)
           contextMenu.setCustomContextMenuForTextFields(searchField);
       });
-      contextMenu.setCustomContextMenuForTextFields(searchField);
+      startDatePicker.getEditor().focusedProperty().addListener(
+      (observable, oldValue, newValue) -> {
+        if (newValue)
+          contextMenu
+            .setCustomContextMenuForTextFields(startDatePicker.getEditor());
+      });
+      endDatePicker.getEditor().focusedProperty().addListener(
+      (observable, oldValue, newValue) -> {
+        if (newValue)
+          contextMenu
+            .setCustomContextMenuForTextFields(endDatePicker.getEditor());
+      });
 
       Date.applyDateMaskOnInputFields(startDatePicker);
       Date.applyDateMaskOnInputFields(endDatePicker);
