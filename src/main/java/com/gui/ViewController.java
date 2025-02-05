@@ -50,7 +50,7 @@ public class ViewController {
         try {
           return controllerClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
-          System.err.println(e.getMessage());
+          e.printStackTrace();
           return null;
         }
       });
@@ -84,7 +84,7 @@ public class ViewController {
         try {
           return controllerClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
-          System.err.println(e.getMessage());
+          e.printStackTrace();
           return null;
         }
       });
@@ -97,7 +97,7 @@ public class ViewController {
       currentStage.setTitle("Imóveis");
       currentStage.show();
     } catch (IOException e) {
-      System.err.println(e.getMessage());
+      e.printStackTrace();
     }
   }
 
@@ -121,7 +121,7 @@ public class ViewController {
         try {
           return controllerClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
-          System.err.println(e.getMessage());
+          e.printStackTrace();
           return null;
         }
       });
@@ -135,7 +135,7 @@ public class ViewController {
       currentStage.setTitle("Contratos");
       currentStage.show();
     } catch (IOException e) {
-      System.err.println(e.getMessage());
+      e.printStackTrace();
     }
   }
 
@@ -157,7 +157,7 @@ public class ViewController {
         try {
           return controllerClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
-          System.err.println(e.getMessage());
+          e.printStackTrace();
         }
         return null;
       });
@@ -176,7 +176,7 @@ public class ViewController {
       commissionReportStage.show();
       commissionReportStage.setResizable(false);
     } catch (IOException e) {
-      System.err.println(e.getMessage());
+      e.printStackTrace();
       Alerts.showAlert(
         "Erro", "Falha ao abrir o relatório de comissões. " +
         "Entre em contato com o suporte.", e.getMessage(), AlertType.ERROR
