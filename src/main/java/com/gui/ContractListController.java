@@ -447,7 +447,7 @@ public class ContractListController {
         event -> downloadContracts()
       );
 
-      contractTable.setPlaceholder(new Label("Não há clientes registrados"));
+      contractTable.setPlaceholder(new Label("Não há contratos registrados"));
 
       CustomContextMenu contextMenu = new CustomContextMenu();
       TableCellConfiguration tableCellConfig = new TableCellConfiguration();
