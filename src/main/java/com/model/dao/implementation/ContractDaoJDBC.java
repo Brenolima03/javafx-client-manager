@@ -242,25 +242,21 @@ public class ContractDaoJDBC implements ContractDao {
 
   @Override
   public List<Contract> getAllContractsDao() {
-    PreparedStatement st = null;
-    ResultSet rs = null;
-    try {
-      String sql = "SELECT * FROM CONTRACTS";
+    List<Contract> contracts = new ArrayList<>();
 
-      st = conn.prepareStatement(sql);
-      rs = st.executeQuery();
+    try (
+      PreparedStatement stmt = conn.prepareStatement("SELECT * FROM CONTRACTS");
+      ResultSet rs = stmt.executeQuery()
+    ) {
 
-      List<Contract> list = new ArrayList<>();
-
-      while (rs.next()) list.add(instantiateContractDao(rs));
-
-      return list.isEmpty() ? null : list;
+      while (rs.next()) {
+        Contract contract = instantiateContractDao(rs);
+        contracts.add(contract);
+      }
     } catch (SQLException e) {
-      throw new DbException("Erro ao buscar os contratos: " + e.getMessage());
-    } finally {
-      DB.closeStatement(st);
-      DB.closeResultSet(rs);
     }
+
+    return contracts;
   }
 
   @Override

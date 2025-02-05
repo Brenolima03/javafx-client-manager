@@ -95,23 +95,19 @@ public class EstateDaoJDBC implements EstateDao {
   @Override
   public List<Estate> findAllEstatesDao() {
     List<Estate> estates = new ArrayList<>();
-    PreparedStatement st = null;
-    ResultSet rs = null;
 
-    try {
-      st = conn.prepareStatement("SELECT * FROM ESTATES");
-      rs = st.executeQuery();
-  
+    try (
+      PreparedStatement stmt = conn.prepareStatement("SELECT * FROM ESTATES");
+      ResultSet rs = stmt.executeQuery()
+    ) {
+
       while (rs.next()) {
-        estates.add(instantiateEstateDao(rs));
+        Estate estate = instantiateEstateDao(rs);
+        estates.add(estate);
       }
     } catch (SQLException e) {
-      throw new DbException("Error retrieving estates: " + e.getMessage(), e);
-    } finally {
-      DB.closeStatement(st);
-      DB.closeResultSet(rs);
     }
-  
+
     return estates;
   }
 
