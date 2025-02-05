@@ -2,6 +2,7 @@ package com.utils;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import org.apache.poi.ss.usermodel.Row;
@@ -20,42 +21,45 @@ public class CommissionReportBuilder {
       return;
     }
 
-    Workbook workbook = new XSSFWorkbook();
-    Sheet sheet = workbook.createSheet("Comissões");
-
-    Row headerRow = sheet.createRow(0);
-    headerRow.createCell(0).setCellValue("Locador");
-    headerRow.createCell(1).setCellValue("Comissão");
-
-    int rowIndex = 1;
-
-    // Fill the sheet with the data from the LinkedHashMap
-    for (Map.Entry<String, String> entry : commissionData.entrySet()) {
-      Row row = sheet.createRow(rowIndex++);
-      row.createCell(0).setCellValue(entry.getKey());
-      row.createCell(1).setCellValue(entry.getValue());
+    String desktopPath = FindDesktopPath.getPathForWindows();
+    if (desktopPath == null) {
+      Alerts.showAlert(
+        "Erro", "Falha ao localizar a área de trabalho.", null, AlertType.ERROR
+      );
+      return;
     }
 
-    sheet.autoSizeColumn(0);
-    sheet.autoSizeColumn(1);
+    String outputFilePath = Paths.get(desktopPath, "comissões.xlsx").toString();
 
-    try (FileOutputStream fileOut = new FileOutputStream("comissões.xlsx")) {
-      workbook.write(fileOut);
-      Alerts.showAlert(
-        "Sucesso", "Arquivo Excel gerado com sucesso!",
-        null, AlertType.INFORMATION
-      );
+    try (Workbook workbook = new XSSFWorkbook()) {
+      Sheet sheet = workbook.createSheet("Comissões");
+
+      Row headerRow = sheet.createRow(0);
+      headerRow.createCell(0).setCellValue("Locador");
+      headerRow.createCell(1).setCellValue("Comissão");
+
+      int rowIndex = 1;
+      for (Map.Entry<String, String> entry : commissionData.entrySet()) {
+        Row row = sheet.createRow(rowIndex++);
+        row.createCell(0).setCellValue(entry.getKey());
+        row.createCell(1).setCellValue(entry.getValue());
+      }
+
+      sheet.autoSizeColumn(0);
+      sheet.autoSizeColumn(1);
+
+      try (FileOutputStream fileOut = new FileOutputStream(outputFilePath)) {
+        workbook.write(fileOut);
+        Alerts.showAlert(
+          "Sucesso", "Arquivo Excel gerado com sucesso na área de trabalho!",
+          null, AlertType.INFORMATION
+        );
+      }
     } catch (IOException e) {
       Alerts.showAlert(
         "Erro", "Falha ao gerar o arquivo. Entre em contato com o suporte.",
         e.getMessage(), AlertType.ERROR
       );
-    } finally {
-      try {
-        workbook.close();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
     }
   }
 }

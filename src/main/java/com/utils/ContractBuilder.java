@@ -23,17 +23,18 @@ public class ContractBuilder {
     try {
       String fileName = "ContractModel.docx";
 
-      // Read the .docx file
       try (XWPFDocument doc =
         new XWPFDocument(Files.newInputStream(Paths.get(fileName)))) {
 
-        // Loop through all paragraphs and replace placeholders
         for (XWPFParagraph paragraph : doc.getParagraphs())
           replacePlaceholders(paragraph, tenant, landlord, estate, contract);
 
-        // Save the modified document to a new file
+        String desktopPath = FindDesktopPath.getPathForWindows();
+        if (desktopPath == null) return;
+
         String outputFileName =
-          String.format("Contrato %d.docx", contract.getId());
+          String.format("%s/Contrato %d.docx", desktopPath, contract.getId());
+
         try (FileOutputStream out = new FileOutputStream(outputFileName)) {
           doc.write(out);
         }
