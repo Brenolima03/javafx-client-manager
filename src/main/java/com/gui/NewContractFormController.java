@@ -167,7 +167,7 @@ public class NewContractFormController {
       ));
 
     landlordField.getItems().addAll(landlords.keySet());
-    landlordField.setPromptText("Locatário");
+    landlordField.setPromptText("Locador");
     landlordField.setOnAction(e -> {
       Integer landlordId =
         landlords.get(landlordField.getSelectionModel().getSelectedItem());
